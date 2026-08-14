@@ -306,7 +306,20 @@ func convertWithLibreOffice(ctx context.Context, tempDir, inputPath, targetForma
 		}
 	}
 
-	return "", fmt.Errorf("soffice exec error: %v, output: %s", err, string(output))
+	// Automatic Fallback without --infilter if primaryCmd fails
+	fallbackCmd := buildCmd("", target, inputPath)
+	outputFB, errFB := fallbackCmd.CombinedOutput()
+	if errFB == nil {
+		if info, statErr := os.Stat(expectedOutputPath); statErr == nil && info.Size() > 0 {
+			return expectedOutputPath, nil
+		}
+		files, _ := filepath.Glob(filepath.Join(tempDir, fmt.Sprintf("*.%s", targetFormat)))
+		if len(files) > 0 {
+			return files[0], nil
+		}
+	}
+
+	return "", fmt.Errorf("soffice exec error: %v (fallback: %v), output: %s %s", err, errFB, string(output), string(outputFB))
 }
 
 func compressFile(ctx context.Context, tempDir, inputPath, targetFormat string) (string, error) {

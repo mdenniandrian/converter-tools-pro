@@ -119,22 +119,26 @@ class Database
             $stmt->execute([$k, $v]);
         }
 
-        // Schema Migrations (Each statement executed independently to prevent single-failure aborts)
+        // Schema Migrations (Each statement executed independently with ROLLBACK to clear PostgreSQL transaction abort state)
         $migrations = [
-            "ALTER TABLE users ALTER COLUMN id TYPE VARCHAR(255);",
-            "ALTER TABLE jobs ALTER COLUMN id TYPE VARCHAR(255);",
-            "ALTER TABLE jobs ALTER COLUMN user_id TYPE VARCHAR(255) USING user_id::VARCHAR;",
-            "ALTER TABLE activation_codes ALTER COLUMN id TYPE VARCHAR(255);",
             "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS action_type VARCHAR(50) DEFAULT 'doc_convert';",
             "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS output_filename VARCHAR(255);",
             "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS original_filename VARCHAR(255);",
-            "ALTER TABLE jobs ALTER COLUMN original_filename DROP NOT NULL;"
+            "ALTER TABLE jobs ALTER COLUMN original_filename DROP NOT NULL;",
+            "ALTER TABLE users ALTER COLUMN id TYPE VARCHAR(255);",
+            "ALTER TABLE jobs ALTER COLUMN id TYPE VARCHAR(255);",
+            "ALTER TABLE jobs ALTER COLUMN user_id TYPE VARCHAR(255) USING user_id::VARCHAR;",
+            "ALTER TABLE activation_codes ALTER COLUMN id TYPE VARCHAR(255);"
         ];
 
         foreach ($migrations as $sql) {
             try {
                 $pdo->exec($sql);
-            } catch (\Throwable $t) {}
+            } catch (\Throwable $t) {
+                try {
+                    $pdo->exec("ROLLBACK;");
+                } catch (\Throwable $t2) {}
+            }
         }
 
         $adminCheck = $pdo->prepare("SELECT id FROM users WHERE email = 'admin@convertify.local'");

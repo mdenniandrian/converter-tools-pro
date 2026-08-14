@@ -159,6 +159,8 @@ services:
       FILESYSTEM_DISK: s3
       AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
       AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
       AWS_DEFAULT_REGION: us-east-1
       AWS_BUCKET: ${AWS_BUCKET:-temp-converter-files}
       AWS_ENDPOINT: http://minio:9000

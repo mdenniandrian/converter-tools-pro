@@ -172,53 +172,25 @@ class JobController
 
         $minioHost = "http://minio:9000";
         $bucket = getenv('AWS_BUCKET') ?: 'temp-converter-files';
-        $accessKey = getenv('AWS_ACCESS_KEY_ID') ?: (getenv('MINIO_ROOT_USER') ?: 'minioadmin');
-        $secretKey = getenv('AWS_SECRET_ACCESS_KEY') ?: (getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123');
-        $region = 'us-east-1';
-        $service = 's3';
-
         $cleanKey = ltrim($job['output_s3_key'], '/');
         $fileUrl = "{$minioHost}/{$bucket}/{$cleanKey}";
 
-        $now = new \DateTime('now', new \DateTimeZone('UTC'));
-        $amzDate = $now->format('Ymd\THis\Z');
-        $dateStamp = $now->format('Ymd');
-
-        $canonicalUri = "/{$bucket}/{$cleanKey}";
-        $emptyHash = hash('sha256', '');
-        $canonicalHeaders = "host:minio:9000\nx-amz-content-sha256:{$emptyHash}\nx-amz-date:{$amzDate}\n";
-        $signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
-
-        $canonicalRequest = "GET\n{$canonicalUri}\n\n{$canonicalHeaders}\n{$signedHeaders}\n{$emptyHash}";
-        $credentialScope = "{$dateStamp}/{$region}/{$service}/aws4_request";
-        $stringToSign = "AWS4-HMAC-SHA256\n{$amzDate}\n{$credentialScope}\n" . hash('sha256', $canonicalRequest);
-
-        $kDate = hash_hmac('sha256', $dateStamp, 'AWS4' . $secretKey, true);
-        $kRegion = hash_hmac('sha256', $region, $kDate, true);
-        $kService = hash_hmac('sha256', $service, $kRegion, true);
-        $kSigning = hash_hmac('sha256', 'aws4_request', $kService, true);
-        $signature = hash_hmac('sha256', $stringToSign, $kSigning);
-
-        $authorizationHeader = "AWS4-HMAC-SHA256 Credential={$accessKey}/{$credentialScope}, SignedHeaders={$signedHeaders}, Signature={$signature}";
-
-        $headers = [
-            'Host: minio:9000',
-            "x-amz-date: {$amzDate}",
-            "x-amz-content-sha256: {$emptyHash}",
-            "Authorization: {$authorizationHeader}"
-        ];
-
+        // 1. Try Direct Stream from internal MinIO network first (Fastest & robust)
         $ch = curl_init($fileUrl);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         $fileData = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
         curl_close($ch);
 
+        // 2. If 403 (Access Denied), fallback to S3 Presigned Signed URL
         if ($httpCode === 403 || $httpCode === 0) {
-            $ch = curl_init($fileUrl);
+            $presignedUrl = self::getPresignedUrl($job['output_s3_key']);
+            $ch = curl_init($presignedUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
             $fileData = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
@@ -344,7 +316,6 @@ class JobController
 
         $headers = [
             'Content-Type: ' . ($contentType ?: 'application/octet-stream'),
-            'Host: minio:9000',
             "x-amz-date: {$amzDate}",
             "x-amz-content-sha256: {$contentHash}",
             "Authorization: {$authorizationHeader}"
@@ -414,7 +385,6 @@ class JobController
         $authorizationHeader = "AWS4-HMAC-SHA256 Credential={$accessKey}/{$credentialScope}, SignedHeaders={$signedHeaders}, Signature={$signature}";
 
         $headers = [
-            'Host: minio:9000',
             "x-amz-date: {$amzDate}",
             "x-amz-content-sha256: {$emptyHash}",
             "Authorization: {$authorizationHeader}"
@@ -426,5 +396,54 @@ class JobController
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_exec($ch);
         curl_close($ch);
+    }
+
+    private static function getPresignedUrl(string $objectKey, int $expiresInSeconds = 3600): string
+    {
+        $minioHost = "http://minio:9000";
+        $bucket = getenv('AWS_BUCKET') ?: 'temp-converter-files';
+        $accessKey = getenv('AWS_ACCESS_KEY_ID') ?: (getenv('MINIO_ROOT_USER') ?: 'minioadmin');
+        $secretKey = getenv('AWS_SECRET_ACCESS_KEY') ?: (getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123');
+        $region = 'us-east-1';
+        $service = 's3';
+
+        $cleanKey = ltrim($objectKey, '/');
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
+        $amzDate = $now->format('Ymd\THis\Z');
+        $dateStamp = $now->format('Ymd');
+        $credentialScope = "{$dateStamp}/{$region}/{$service}/aws4_request";
+
+        $pathSegments = array_map('rawurlencode', explode('/', $cleanKey));
+        $canonicalUri = '/' . rawurlencode($bucket) . '/' . implode('/', $pathSegments);
+
+        $queryParams = [
+            'X-Amz-Algorithm' => 'AWS4-HMAC-SHA256',
+            'X-Amz-Credential' => "{$accessKey}/{$credentialScope}",
+            'X-Amz-Date' => $amzDate,
+            'X-Amz-Expires' => (string)$expiresInSeconds,
+            'X-Amz-SignedHeaders' => 'host',
+        ];
+
+        ksort($queryParams);
+        $queryParts = [];
+        foreach ($queryParams as $k => $v) {
+            $queryParts[] = rawurlencode($k) . '=' . rawurlencode($v);
+        }
+        $canonicalQueryString = implode('&', $queryParts);
+
+        $canonicalHeaders = "host:minio:9000\n";
+        $signedHeaders = 'host';
+        $payloadHash = 'UNSIGNED-PAYLOAD';
+
+        $canonicalRequest = "GET\n{$canonicalUri}\n{$canonicalQueryString}\n{$canonicalHeaders}\n{$signedHeaders}\n{$payloadHash}";
+        $stringToSign = "AWS4-HMAC-SHA256\n{$amzDate}\n{$credentialScope}\n" . hash('sha256', $canonicalRequest);
+
+        $kDate = hash_hmac('sha256', $dateStamp, 'AWS4' . $secretKey, true);
+        $kRegion = hash_hmac('sha256', $region, $kDate, true);
+        $kService = hash_hmac('sha256', $service, $kRegion, true);
+        $kSigning = hash_hmac('sha256', 'aws4_request', $kService, true);
+        $signature = hash_hmac('sha256', $stringToSign, $kSigning);
+
+        return "{$minioHost}{$canonicalUri}?{$canonicalQueryString}&X-Amz-Signature={$signature}";
     }
 }

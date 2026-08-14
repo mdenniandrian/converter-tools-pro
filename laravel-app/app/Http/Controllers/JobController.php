@@ -248,12 +248,25 @@ class JobController
         if (!$outExt) {
             $outExt = ($job['target_format'] === 'removebg') ? 'png' : $job['target_format'];
         }
-        $downloadName = "{$origBaseName}_converted.{$outExt}";
+
+        // Clean filename for HTTP header compatibility
+        $safeBaseName = preg_replace('/[^a-zA-Z0-9_\.-]/', '_', $origBaseName);
+        if (empty($safeBaseName)) {
+            $safeBaseName = 'converted_file';
+        }
+        $safeDownloadName = "{$safeBaseName}_converted.{$outExt}";
+        $utf8DownloadName = rawurlencode("{$origBaseName}_converted.{$outExt}");
+
+        // Clear any previous output buffers to avoid Content-Length mismatch (NS_ERROR_NET_PARTIAL_TRANSFER)
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
 
         header('Content-Type: ' . ($contentType ?: 'application/octet-stream'));
-        header('Content-Disposition: attachment; filename="' . addslashes($downloadName) . '"');
+        header('Content-Disposition: attachment; filename="' . $safeDownloadName . '"; filename*=UTF-8\'\'' . $utf8DownloadName);
         header('Content-Length: ' . strlen($fileData));
         header('Cache-Control: no-cache, must-revalidate');
+        header('Pragma: public');
 
         $updateStmt = $db->prepare("UPDATE jobs SET status = 'downloaded', downloaded_at = NOW() WHERE id = ?");
         $updateStmt->execute([$jobId]);

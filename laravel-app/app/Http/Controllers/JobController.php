@@ -170,7 +170,7 @@ class JobController
             exit;
         }
 
-        $minioHost = "http://minio:9000";
+        $minioHost = getenv('AWS_ENDPOINT') ?: "http://minio:9000";
         $bucket = getenv('AWS_BUCKET') ?: 'temp-converter-files';
         $cleanKey = ltrim($job['output_s3_key'], '/');
         $fileUrl = "{$minioHost}/{$bucket}/{$cleanKey}";
@@ -281,7 +281,7 @@ class JobController
 
     private static function uploadToMinIO(string $objectKey, string $filePath, string $contentType): void
     {
-        $minioHost = "http://minio:9000";
+        $minioHost = getenv('AWS_ENDPOINT') ?: "http://minio:9000";
         $bucket = getenv('AWS_BUCKET') ?: 'temp-converter-files';
         $accessKey = getenv('AWS_ACCESS_KEY_ID') ?: (getenv('MINIO_ROOT_USER') ?: 'minioadmin');
         $secretKey = getenv('AWS_SECRET_ACCESS_KEY') ?: (getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123');
@@ -355,7 +355,7 @@ class JobController
         if (empty($objectKey))
             return;
 
-        $minioHost = "http://minio:9000";
+        $minioHost = getenv('AWS_ENDPOINT') ?: "http://minio:9000";
         $bucket = getenv('AWS_BUCKET') ?: 'temp-converter-files';
         $accessKey = getenv('AWS_ACCESS_KEY_ID') ?: (getenv('MINIO_ROOT_USER') ?: 'minioadmin');
         $secretKey = getenv('AWS_SECRET_ACCESS_KEY') ?: (getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123');
@@ -402,7 +402,7 @@ class JobController
 
     private static function getPresignedUrl(string $objectKey, int $expiresInSeconds = 3600): string
     {
-        $minioHost = "http://minio:9000";
+        $minioHost = getenv('AWS_ENDPOINT') ?: "http://minio:9000";
         $bucket = getenv('AWS_BUCKET') ?: 'temp-converter-files';
         $accessKey = getenv('AWS_ACCESS_KEY_ID') ?: (getenv('MINIO_ROOT_USER') ?: 'minioadmin');
         $secretKey = getenv('AWS_SECRET_ACCESS_KEY') ?: (getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123');

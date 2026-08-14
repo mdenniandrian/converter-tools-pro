@@ -216,9 +216,19 @@ class JobController
         $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
         curl_close($ch);
 
+        if ($httpCode === 403 || $httpCode === 0) {
+            $ch = curl_init($fileUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $fileData = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+            curl_close($ch);
+        }
+
         if ($httpCode !== 200 || !$fileData) {
             http_response_code(500);
-            echo "Failed to stream download from storage.";
+            $errDetail = trim(substr(strip_tags((string)$fileData), 0, 200));
+            echo "Failed to stream download from storage (HTTP {$httpCode})" . ($errDetail ? ": {$errDetail}" : ".");
             exit;
         }
 

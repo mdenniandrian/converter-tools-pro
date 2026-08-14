@@ -72,7 +72,9 @@ class Database
             CREATE TABLE IF NOT EXISTS jobs (
                 id VARCHAR(255) PRIMARY KEY,
                 user_id VARCHAR(255) NULL,
-                original_filename VARCHAR(255) NOT NULL,
+                action_type VARCHAR(50) DEFAULT 'doc_convert',
+                original_filename VARCHAR(255) NULL,
+                output_filename VARCHAR(255) NULL,
                 target_format VARCHAR(20) NOT NULL,
                 input_s3_key VARCHAR(500) NOT NULL,
                 output_s3_key VARCHAR(500) NULL,
@@ -117,17 +119,23 @@ class Database
             $stmt->execute([$k, $v]);
         }
 
-        // Default Super Admin Account
-        try {
-            $pdo->exec("ALTER TABLE users ALTER COLUMN id TYPE VARCHAR(255);");
-            $pdo->exec("ALTER TABLE jobs ALTER COLUMN id TYPE VARCHAR(255);");
-            $pdo->exec("ALTER TABLE jobs ALTER COLUMN user_id TYPE VARCHAR(255) USING user_id::VARCHAR;");
-            $pdo->exec("ALTER TABLE activation_codes ALTER COLUMN id TYPE VARCHAR(255);");
-            $pdo->exec("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS action_type VARCHAR(50) DEFAULT 'doc_convert';");
-            $pdo->exec("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS output_filename VARCHAR(255);");
-            $pdo->exec("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS original_filename VARCHAR(255);");
-            $pdo->exec("ALTER TABLE jobs ALTER COLUMN original_filename DROP NOT NULL;");
-        } catch (\Throwable $t) {}
+        // Schema Migrations (Each statement executed independently to prevent single-failure aborts)
+        $migrations = [
+            "ALTER TABLE users ALTER COLUMN id TYPE VARCHAR(255);",
+            "ALTER TABLE jobs ALTER COLUMN id TYPE VARCHAR(255);",
+            "ALTER TABLE jobs ALTER COLUMN user_id TYPE VARCHAR(255) USING user_id::VARCHAR;",
+            "ALTER TABLE activation_codes ALTER COLUMN id TYPE VARCHAR(255);",
+            "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS action_type VARCHAR(50) DEFAULT 'doc_convert';",
+            "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS output_filename VARCHAR(255);",
+            "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS original_filename VARCHAR(255);",
+            "ALTER TABLE jobs ALTER COLUMN original_filename DROP NOT NULL;"
+        ];
+
+        foreach ($migrations as $sql) {
+            try {
+                $pdo->exec($sql);
+            } catch (\Throwable $t) {}
+        }
 
         $adminCheck = $pdo->prepare("SELECT id FROM users WHERE email = 'admin@convertify.local'");
         $adminCheck->execute();

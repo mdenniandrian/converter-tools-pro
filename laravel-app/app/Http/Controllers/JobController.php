@@ -204,14 +204,6 @@ class JobController
             exit;
         }
 
-        // Delete temporary files from MinIO immediately after reading stream data
-        if (!empty($job['input_s3_key'])) {
-            self::deleteFromMinIO($job['input_s3_key']);
-        }
-        if (!empty($job['output_s3_key'])) {
-            self::deleteFromMinIO($job['output_s3_key']);
-        }
-
         $origBaseName = pathinfo($job['original_filename'], PATHINFO_FILENAME);
         $outExt = pathinfo($job['output_s3_key'], PATHINFO_EXTENSION);
         if (!$outExt || in_array($job['target_format'], ['compress', 'compress_max', 'compress_ebook', 'compress_mail'])) {

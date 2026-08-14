@@ -12,8 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download u2net model for rembg so container starts instantly without waiting for network download
-RUN python -c "from rembg import new_session; new_session('u2net')"
+# Pre-download u2net model for rembg via curl to prevent RAM OOM spike during build
+RUN mkdir -p /root/.u2net && \
+    curl -fsSL https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx -o /root/.u2net/u2net.onnx
 
 COPY . .
 

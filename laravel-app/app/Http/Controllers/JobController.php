@@ -69,7 +69,7 @@ class JobController
             }
 
             $redisHost = getenv('REDIS_HOST') ?: 'redis';
-            $redisPort = (int)(getenv('REDIS_PORT') ?: 6379);
+            $redisPort = (int) (getenv('REDIS_PORT') ?: 6379);
 
             $db = Database::getConnection();
             $createdJobs = [];
@@ -93,8 +93,8 @@ class JobController
                 self::uploadToMinIO($inputS3Key, $tmpPath, $file['type']);
 
                 $actionType = ($targetFormat === 'removebg') ? 'remove_bg' : 'doc_convert';
-                $stmt = $db->prepare("INSERT INTO jobs (id, user_id, action_type, target_format, input_s3_key, output_s3_key, output_filename, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
-                $stmt->execute([$jobId, $user['id'] ?? null, $actionType, $targetFormat, $inputS3Key, $outputS3Key, $originalFilename]);
+                $stmt = $db->prepare("INSERT INTO jobs (id, user_id, action_type, original_filename, output_filename, target_format, input_s3_key, output_s3_key, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')");
+                $stmt->execute([$jobId, $user['id'] ?? null, $actionType, $originalFilename, $originalFilename, $targetFormat, $inputS3Key, $outputS3Key]);
 
                 $queuePayload = json_encode([
                     'job_id' => $jobId,
@@ -135,7 +135,7 @@ class JobController
     {
         header('Content-Type: application/json');
         $db = Database::getConnection();
-        $stmt = $db->prepare("SELECT id, output_filename as original_filename, target_format, status, error_message, created_at, updated_at FROM jobs WHERE id = ?");
+        $stmt = $db->prepare("SELECT id, COALESCE(original_filename, output_filename) as original_filename, target_format, status, error_message, created_at, updated_at FROM jobs WHERE id = ?");
         $stmt->execute([$jobId]);
         $job = $stmt->fetch();
 
@@ -160,7 +160,7 @@ class JobController
     public static function handleDownload(string $jobId): void
     {
         $db = Database::getConnection();
-        $stmt = $db->prepare("SELECT input_s3_key, output_s3_key, output_filename as original_filename, target_format, status FROM jobs WHERE id = ?");
+        $stmt = $db->prepare("SELECT input_s3_key, output_s3_key, COALESCE(original_filename, output_filename) as original_filename, target_format, status FROM jobs WHERE id = ?");
         $stmt->execute([$jobId]);
         $job = $stmt->fetch();
 
@@ -172,8 +172,8 @@ class JobController
 
         $minioHost = "http://minio:9000";
         $bucket = getenv('AWS_BUCKET') ?: 'temp-converter-files';
-        $accessKey = getenv('AWS_ACCESS_KEY_ID') ?: (getenv('MINIO_ROOT_USER') ?: 'minioadmin');
-        $secretKey = getenv('AWS_SECRET_ACCESS_KEY') ?: (getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123');
+        $accessKey = getenv('MINIO_ROOT_USER') ?: 'minioadmin';
+        $secretKey = getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123';
         $region = 'us-east-1';
         $service = 's3';
 
@@ -286,8 +286,8 @@ class JobController
     {
         $minioHost = "http://minio:9000";
         $bucket = getenv('AWS_BUCKET') ?: 'temp-converter-files';
-        $accessKey = getenv('AWS_ACCESS_KEY_ID') ?: (getenv('MINIO_ROOT_USER') ?: 'minioadmin');
-        $secretKey = getenv('AWS_SECRET_ACCESS_KEY') ?: (getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123');
+        $accessKey = getenv('MINIO_ROOT_USER') ?: 'minioadmin';
+        $secretKey = getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123';
         $region = 'us-east-1';
         $service = 's3';
 
@@ -356,12 +356,13 @@ class JobController
 
     private static function deleteFromMinIO(string $objectKey): void
     {
-        if (empty($objectKey)) return;
+        if (empty($objectKey))
+            return;
 
         $minioHost = "http://minio:9000";
         $bucket = getenv('AWS_BUCKET') ?: 'temp-converter-files';
-        $accessKey = getenv('AWS_ACCESS_KEY_ID') ?: (getenv('MINIO_ROOT_USER') ?: 'minioadmin');
-        $secretKey = getenv('AWS_SECRET_ACCESS_KEY') ?: (getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123');
+        $accessKey = getenv('MINIO_ROOT_USER') ?: 'minioadmin';
+        $secretKey = getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123';
         $region = 'us-east-1';
         $service = 's3';
 

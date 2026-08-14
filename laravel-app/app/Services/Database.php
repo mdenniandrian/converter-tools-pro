@@ -123,6 +123,10 @@ class Database
             $pdo->exec("ALTER TABLE jobs ALTER COLUMN id TYPE VARCHAR(255);");
             $pdo->exec("ALTER TABLE jobs ALTER COLUMN user_id TYPE VARCHAR(255) USING user_id::VARCHAR;");
             $pdo->exec("ALTER TABLE activation_codes ALTER COLUMN id TYPE VARCHAR(255);");
+            $pdo->exec("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS action_type VARCHAR(50) DEFAULT 'doc_convert';");
+            $pdo->exec("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS output_filename VARCHAR(255);");
+            $pdo->exec("ALTER TABLE jobs ADD COLUMN IF NOT EXISTS original_filename VARCHAR(255);");
+            $pdo->exec("ALTER TABLE jobs ALTER COLUMN original_filename DROP NOT NULL;");
         } catch (\Throwable $t) {}
 
         $adminCheck = $pdo->prepare("SELECT id FROM users WHERE email = 'admin@convertify.local'");

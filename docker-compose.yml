@@ -13,7 +13,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-converter_user} -d ${DB_DATABASE:-converter_db}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME:-converter_user} -d ${DB_DATABASE:-converter_db}" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -28,7 +28,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -56,16 +56,10 @@ services:
       minio:
         condition: service_started
     entrypoint: >
-      /bin/sh -c "
-      until /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin123}; do
+      /bin/sh -c " until /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin123}; do
         echo 'Waiting for MinIO to start...';
         sleep 2;
-      done;
-      /usr/bin/mc mb --ignore-existing myminio/${AWS_BUCKET:-temp-converter-files};
-      /usr/bin/mc anonymous set download myminio/${AWS_BUCKET:-temp-converter-files};
-      /usr/bin/mc ilm rule add --expiry-days 1 myminio/${AWS_BUCKET:-temp-converter-files} || true;
-      exit 0;
-      "
+      done; /usr/bin/mc mb --ignore-existing myminio/${AWS_BUCKET:-temp-converter-files}; /usr/bin/mc anonymous set download myminio/${AWS_BUCKET:-temp-converter-files}; /usr/bin/mc ilm rule add --expiry-days 1 myminio/${AWS_BUCKET:-temp-converter-files} || true; exit 0; "
 
   # Worker 1: Golang (LibreOffice & ImageMagick Converter)
   worker-golang:
@@ -159,8 +153,6 @@ services:
       FILESYSTEM_DISK: s3
       AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
       AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
       AWS_DEFAULT_REGION: us-east-1
       AWS_BUCKET: ${AWS_BUCKET:-temp-converter-files}
       AWS_ENDPOINT: http://minio:9000

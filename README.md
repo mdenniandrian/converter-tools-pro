@@ -142,8 +142,8 @@ docker compose up -d --build
 
 2. **Clone & Launch Application:**
    ```bash
-   git clone https://github.com/mdenniandrian/converter-tools.git
-   cd converter-tools
+   git clone https://github.com/mdenniandrian/converter-tools-pro.git
+   cd converter-tools-pro
    cp .env.example .env
    docker compose up -d --build
    ```

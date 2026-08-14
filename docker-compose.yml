@@ -1,0 +1,174 @@
+services:
+  # Database: PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: converter_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-converter_db}
+      POSTGRES_USER: ${DB_USERNAME:-converter_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-converter_user} -d ${DB_DATABASE:-converter_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Message Broker & Queue: Redis
+  redis:
+    image: redis:7-alpine
+    container_name: converter_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Shared Temporary Storage: MinIO (S3 Compatible)
+  minio:
+    image: minio/minio:RELEASE.2024-01-18T22-51-28Z
+    container_name: converter_minio
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  # MinIO Bucket Auto-Initialization Service
+  minio-init:
+    image: minio/mc
+    container_name: converter_minio_init
+    depends_on:
+      minio:
+        condition: service_started
+    entrypoint: >
+      /bin/sh -c "
+      until /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin123}; do
+        echo 'Waiting for MinIO to start...';
+        sleep 2;
+      done;
+      /usr/bin/mc mb --ignore-existing myminio/${AWS_BUCKET:-temp-converter-files};
+      /usr/bin/mc anonymous set download myminio/${AWS_BUCKET:-temp-converter-files};
+      /usr/bin/mc ilm rule add --expiry-days 1 myminio/${AWS_BUCKET:-temp-converter-files} || true;
+      exit 0;
+      "
+
+  # Worker 1: Golang (LibreOffice & ImageMagick Converter)
+  worker-golang:
+    build:
+      context: ./worker-golang
+      dockerfile: Dockerfile
+    container_name: converter_worker_golang
+    restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_QUEUE_KEY: converter_jobs_doc
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USERNAME:-converter_user}
+      DB_PASSWORD: ${DB_PASSWORD:-secret123}
+      DB_NAME: ${DB_DATABASE:-converter_db}
+      S3_ENDPOINT: minio:9000
+      S3_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      S3_BUCKET: ${AWS_BUCKET:-temp-converter-files}
+      S3_USE_SSL: "false"
+      MAX_WORKERS: "4"
+
+  # Worker 2: Python (Background Remover via rembg)
+  worker-python:
+    build:
+      context: ./worker-python
+      dockerfile: Dockerfile
+    container_name: converter_worker_python
+    restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_QUEUE_KEY: converter_jobs_bg
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USERNAME:-converter_user}
+      DB_PASSWORD: ${DB_PASSWORD:-secret123}
+      DB_NAME: ${DB_DATABASE:-converter_db}
+      S3_ENDPOINT: minio:9000
+      S3_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      S3_BUCKET: ${AWS_BUCKET:-temp-converter-files}
+      S3_USE_SSL: "false"
+
+  # Main App: Laravel API Gateway
+  laravel-app:
+    build:
+      context: ./laravel-app
+      dockerfile: Dockerfile
+    container_name: converter_laravel_app
+    restart: always
+    ports:
+      - "8000:80"
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      APP_NAME: "ConverterTools"
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${APP_KEY:-base64:c29tZXJhbmRvbWtleTMyYnl0ZXNsb25nc3RyaW5nPQ==}
+      APP_URL: ${APP_URL:-http://localhost:8000}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-converter_db}
+      DB_USERNAME: ${DB_USERNAME:-converter_user}
+      DB_PASSWORD: ${DB_PASSWORD:-secret123}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      FILESYSTEM_DISK: s3
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_BUCKET: ${AWS_BUCKET:-temp-converter-files}
+      AWS_ENDPOINT: http://minio:9000
+      AWS_USE_PATH_STYLE_ENDPOINT: "true"
+      WA_ADMIN_NUMBER: ${WA_ADMIN_NUMBER:-6282113237920}
+      MIDTRANS_SERVER_KEY: ${MIDTRANS_SERVER_KEY:-}
+      MIDTRANS_CLIENT_KEY: ${MIDTRANS_CLIENT_KEY:-}
+      MIDTRANS_IS_PRODUCTION: ${MIDTRANS_IS_PRODUCTION:-true}
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:

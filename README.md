@@ -80,8 +80,8 @@ Docker Compose is the fastest and most reliable way to run Convertify Pro on bot
 
 ### Step 1: Clone Repository
 ```bash
-git clone https://github.com/mdenniandrian/converter-tools.git
-cd converter-tools
+git clone https://github.com/mdenniandrian/converter-tools-pro.git
+cd converter-tools-pro
 ```
 
 ### Step 2: Configure Environment (`.env`)
@@ -132,13 +132,20 @@ docker compose up -d --build
 
 ### Option A: Docker Deployment (Recommended for VPS)
 
-1. **Install Docker Engine & Docker Compose Plugin:**
-   ```bash
-   sudo apt update
-   sudo apt install -y curl git docker.io docker-compose-plugin
-   sudo systemctl enable --now docker
-   sudo usermod -aG docker $USER
-   ```
+1. **Install Docker Engine & Docker Compose:**
+   - **Method 1: Official Docker Convenience Script (Recommended)**
+     ```bash
+     curl -fsSL https://get.docker.com | sh
+     sudo usermod -aG docker $USER
+     # Log out and log back in for group changes to take effect
+     ```
+   - **Method 2: Standard Ubuntu / Debian APT Package**
+     ```bash
+     sudo apt update
+     sudo apt install -y curl git docker.io docker-compose
+     sudo systemctl enable --now docker
+     sudo usermod -aG docker $USER
+     ```
 
 2. **Clone & Launch Application:**
    ```bash
@@ -234,8 +241,8 @@ If running directly on Ubuntu 22.04 / 24.04 server without Docker:
 2. Enable **WSL 2 (Windows Subsystem for Linux)** during installation.
 3. Open **PowerShell** or **Git Bash**:
    ```powershell
-   git clone https://github.com/mdenniandrian/converter-tools.git
-   cd converter-tools
+   git clone https://github.com/mdenniandrian/converter-tools-pro.git
+   cd converter-tools-pro
    Copy-Item .env.example .env
    docker compose up -d --build
    ```

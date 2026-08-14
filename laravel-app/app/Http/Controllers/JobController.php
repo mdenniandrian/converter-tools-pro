@@ -172,8 +172,8 @@ class JobController
 
         $minioHost = "http://minio:9000";
         $bucket = getenv('AWS_BUCKET') ?: 'temp-converter-files';
-        $accessKey = getenv('MINIO_ROOT_USER') ?: 'minioadmin';
-        $secretKey = getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123';
+        $accessKey = getenv('AWS_ACCESS_KEY_ID') ?: (getenv('MINIO_ROOT_USER') ?: 'minioadmin');
+        $secretKey = getenv('AWS_SECRET_ACCESS_KEY') ?: (getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123');
         $region = 'us-east-1';
         $service = 's3';
 
@@ -286,8 +286,8 @@ class JobController
     {
         $minioHost = "http://minio:9000";
         $bucket = getenv('AWS_BUCKET') ?: 'temp-converter-files';
-        $accessKey = getenv('MINIO_ROOT_USER') ?: 'minioadmin';
-        $secretKey = getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123';
+        $accessKey = getenv('AWS_ACCESS_KEY_ID') ?: (getenv('MINIO_ROOT_USER') ?: 'minioadmin');
+        $secretKey = getenv('AWS_SECRET_ACCESS_KEY') ?: (getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123');
         $region = 'us-east-1';
         $service = 's3';
 
@@ -361,8 +361,8 @@ class JobController
 
         $minioHost = "http://minio:9000";
         $bucket = getenv('AWS_BUCKET') ?: 'temp-converter-files';
-        $accessKey = getenv('MINIO_ROOT_USER') ?: 'minioadmin';
-        $secretKey = getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123';
+        $accessKey = getenv('AWS_ACCESS_KEY_ID') ?: (getenv('MINIO_ROOT_USER') ?: 'minioadmin');
+        $secretKey = getenv('AWS_SECRET_ACCESS_KEY') ?: (getenv('MINIO_ROOT_PASSWORD') ?: 'minioadmin123');
         $region = 'us-east-1';
         $service = 's3';
 

@@ -103,7 +103,7 @@ MINIO_ROOT_PASSWORD=minioadmin123
 AWS_BUCKET=temp-converter-files
 
 # WhatsApp Admin Configuration
-WA_ADMIN_NUMBER=6282113237920
+WA_ADMIN_NUMBER=62821234567890
 
 # Midtrans Payment Gateway Configuration
 MIDTRANS_SERVER_KEY=Mid-server-YOUR_SERVER_KEY
@@ -286,7 +286,7 @@ If running directly on Ubuntu 22.04 / 24.04 server without Docker:
 | `MINIO_ROOT_USER` | MinIO Access Key ID | `minioadmin` |
 | `MINIO_ROOT_PASSWORD` | MinIO Secret Access Key | `minioadmin123` |
 | `AWS_BUCKET` | MinIO Bucket Name | `temp-converter-files` |
-| `WA_ADMIN_NUMBER` | WhatsApp Admin Phone (International format, e.g. `628...`) | `6282113237920` |
+| `WA_ADMIN_NUMBER` | WhatsApp Admin Phone (International format, e.g. `628...`) | `6281234567890` |
 | `MIDTRANS_SERVER_KEY` | Midtrans Server Key | `Mid-server-...` |
 | `MIDTRANS_CLIENT_KEY` | Midtrans Client Key | `Mid-client-...` |
 | `MIDTRANS_IS_PRODUCTION` | Midtrans Production Mode (`true` / `false`) | `false` |

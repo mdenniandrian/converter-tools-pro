@@ -283,43 +283,38 @@ func convertWithLibreOffice(ctx context.Context, tempDir, inputPath, targetForma
 	}
 
 	// 2. Standard LibreOffice Conversion
-	var primaryCmd *exec.Cmd
-	if ext == ".pdf" {
-		if target == "docx" || target == "doc" {
-			primaryCmd = buildCmd("writer_pdf_import", "docx", inputPath)
-		} else {
-			primaryCmd = buildCmd("", target, inputPath)
-		}
-	} else {
-		primaryCmd = buildCmd("", target, inputPath)
-	}
-
+	primaryCmd := buildCmd("", target, inputPath)
 	output, err := primaryCmd.CombinedOutput()
 
 	if err == nil {
-		if info, statErr := os.Stat(expectedOutputPath); statErr == nil && info.Size() > 0 {
+		if info, statErr := os.Stat(expectedOutputPath); statErr == nil && info.Size() > 1000 {
 			return expectedOutputPath, nil
 		}
 		files, _ := filepath.Glob(filepath.Join(tempDir, fmt.Sprintf("*.%s", targetFormat)))
-		if len(files) > 0 {
-			return files[0], nil
+		for _, f := range files {
+			if info, statErr := os.Stat(f); statErr == nil && info.Size() > 1000 {
+				return f, nil
+			}
 		}
 	}
 
-	// Automatic Fallback without --infilter if primaryCmd fails
-	fallbackCmd := buildCmd("", target, inputPath)
-	outputFB, errFB := fallbackCmd.CombinedOutput()
-	if errFB == nil {
-		if info, statErr := os.Stat(expectedOutputPath); statErr == nil && info.Size() > 0 {
-			return expectedOutputPath, nil
+	// Fallback for PDF to DOCX using writer_pdf_import if direct conversion failed or produced dummy empty file
+	if ext == ".pdf" && (target == "docx" || target == "doc") {
+		fallbackCmd := buildCmd("writer_pdf_import", "docx", inputPath)
+		outputFB, errFB := fallbackCmd.CombinedOutput()
+		if errFB == nil {
+			if info, statErr := os.Stat(expectedOutputPath); statErr == nil && info.Size() > 0 {
+				return expectedOutputPath, nil
+			}
+			files, _ := filepath.Glob(filepath.Join(tempDir, fmt.Sprintf("*.%s", targetFormat)))
+			if len(files) > 0 {
+				return files[0], nil
+			}
 		}
-		files, _ := filepath.Glob(filepath.Join(tempDir, fmt.Sprintf("*.%s", targetFormat)))
-		if len(files) > 0 {
-			return files[0], nil
-		}
+		return "", fmt.Errorf("soffice exec error: %v (fallback: %v), output: %s %s", err, errFB, string(output), string(outputFB))
 	}
 
-	return "", fmt.Errorf("soffice exec error: %v (fallback: %v), output: %s %s", err, errFB, string(output), string(outputFB))
+	return "", fmt.Errorf("soffice exec error: %v, output: %s", err, string(output))
 }
 
 func compressFile(ctx context.Context, tempDir, inputPath, targetFormat string) (string, error) {

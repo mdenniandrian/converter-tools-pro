@@ -197,6 +197,16 @@ class JobController
             curl_close($ch);
         }
 
+        // 3. Fallback to native PHP HTTP stream wrapper if cURL failed
+        if ($httpCode !== 200 || !$fileData) {
+            $streamCtx = stream_context_create(['http' => ['timeout' => 30]]);
+            $streamContent = @file_get_contents($fileUrl, false, $streamCtx);
+            if ($streamContent !== false && strlen($streamContent) > 0) {
+                $fileData = $streamContent;
+                $httpCode = 200;
+            }
+        }
+
         if ($httpCode !== 200 || !$fileData) {
             http_response_code(500);
             $errDetail = trim(substr(strip_tags((string)$fileData), 0, 200));

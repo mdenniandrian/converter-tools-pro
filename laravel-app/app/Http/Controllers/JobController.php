@@ -265,8 +265,10 @@ class JobController
         header('Pragma: no-cache');
         header('Expires: 0');
 
-        $updateStmt = $db->prepare("UPDATE jobs SET status = 'downloaded', downloaded_at = NOW() WHERE id = ?");
-        $updateStmt->execute([$jobId]);
+        try {
+            $updateStmt = $db->prepare("UPDATE jobs SET status = 'downloaded' WHERE id = ?");
+            $updateStmt->execute([$jobId]);
+        } catch (\Throwable $t) {}
 
         echo $fileData;
         exit;

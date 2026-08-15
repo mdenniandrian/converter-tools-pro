@@ -44,6 +44,7 @@ class Database
             "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS action_type VARCHAR(50) DEFAULT 'doc_convert';",
             "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS output_filename VARCHAR(255);",
             "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS original_filename VARCHAR(255);",
+            "ALTER TABLE jobs ADD COLUMN IF NOT EXISTS downloaded_at TIMESTAMP NULL;",
             "ALTER TABLE jobs ALTER COLUMN original_filename DROP NOT NULL;",
             "ALTER TABLE users ALTER COLUMN id TYPE VARCHAR(255);",
             "ALTER TABLE jobs ALTER COLUMN id TYPE VARCHAR(255);",

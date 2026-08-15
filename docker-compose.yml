@@ -141,7 +141,7 @@ services:
       APP_ENV: production
       APP_DEBUG: "false"
       APP_KEY: ${APP_KEY:-base64:c29tZXJhbmRvbWtleTMyYnl0ZXNsb25nc3RyaW5nPQ==}
-      APP_URL: ${APP_URL:-http://localhost:8000}
+      APP_URL: ${APP_URL:-https://converter.bangden.my.id}
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: 5432

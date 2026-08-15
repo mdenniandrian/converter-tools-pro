@@ -59,7 +59,7 @@ services:
       /bin/sh -c " until /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin123}; do
         echo 'Waiting for MinIO to start...';
         sleep 2;
-      done; /usr/bin/mc mb --ignore-existing myminio/${AWS_BUCKET:-temp-converter-files}; /usr/bin/mc anonymous set download myminio/${AWS_BUCKET:-temp-converter-files}; /usr/bin/mc ilm rule add --expiry-days 1 myminio/${AWS_BUCKET:-temp-converter-files} || true; exit 0; "
+      done; /usr/bin/mc mb --ignore-existing myminio/${AWS_BUCKET:-temp-converter-files}; /usr/bin/mc anonymous set public myminio/${AWS_BUCKET:-temp-converter-files} || true; /usr/bin/mc anonymous set download myminio/${AWS_BUCKET:-temp-converter-files} || true; /usr/bin/mc ilm rule add --expiry-days 1 myminio/${AWS_BUCKET:-temp-converter-files} || true; exit 0; "
 
   # Worker 1: Golang (LibreOffice & ImageMagick Converter)
   worker-golang:

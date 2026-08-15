@@ -207,7 +207,7 @@ class JobController
             }
         }
 
-        if ($httpCode !== 200 || !$fileData) {
+        if ($httpCode !== 200 || !$fileData || str_contains($fileData, '<Error>') || str_contains($fileData, '<?xml')) {
             http_response_code(500);
             $errDetail = trim(substr(strip_tags((string) $fileData), 0, 200));
             echo "Failed to stream download from storage (HTTP {$httpCode})" . ($errDetail ? ": {$errDetail}" : ".");

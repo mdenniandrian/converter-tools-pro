@@ -236,11 +236,20 @@ class JobController
             ob_end_clean();
         }
 
+        // Disable Nginx reverse proxy buffering & gzip compression for binary download streaming
+        if (function_exists('apache_setenv')) {
+            @apache_setenv('no-gzip', '1');
+        }
+        @ini_set('zlib.output_compression', 'Off');
+
+        header('X-Accel-Buffering: no');
+        header('Content-Encoding: identity');
         header('Content-Type: ' . ($contentType ?: 'application/octet-stream'));
         header('Content-Disposition: attachment; filename="' . $safeDownloadName . '"; filename*=UTF-8\'\'' . $utf8DownloadName);
         header('Content-Length: ' . strlen($fileData));
-        header('Cache-Control: no-cache, must-revalidate');
-        header('Pragma: public');
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+        header('Pragma: no-cache');
+        header('Expires: 0');
 
         $updateStmt = $db->prepare("UPDATE jobs SET status = 'downloaded', downloaded_at = NOW() WHERE id = ?");
         $updateStmt->execute([$jobId]);

@@ -245,8 +245,8 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
         let currentTool = 'pdf2word';
         let batchSelectedFiles = [];
         let pollTimers = {};
-        let sysSettings = <?= json_encode($sysSettings) ?>;
-        let authUser = <?= json_encode($authUser) ?>;
+        let sysSettings = <?= json_encode($sysSettings ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?> || {};
+        let authUser = <?= json_encode($authUser ?? null, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?> || null;
 
         /* CUSTOM NOTIFICATION TOAST & CONFIRM MODALS SYSTEM */
         function showToast(message, type = 'success') {
@@ -531,17 +531,31 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
         }
 
         /* AUTH & MODALS */
-        function openAuthModal(mode) {
-            authMode = mode;
-            document.getElementById('authModal').style.display = 'flex';
-            document.getElementById('registerNameGroup').style.display = mode === 'register' ? 'block' : 'none';
-            document.getElementById('authModalTitle').textContent = mode === 'register' ? 'Register Account' : 'Login Account';
-            document.getElementById('authSubmitBtn').textContent = mode === 'register' ? 'Create Account' : 'Login';
-        }
+        window.openAuthModal = function(mode) {
+            authMode = mode || 'login';
+            const m = document.getElementById('authModal');
+            if (m) m.style.display = 'flex';
+            const grp = document.getElementById('registerNameGroup');
+            if (grp) grp.style.display = (authMode === 'register') ? 'block' : 'none';
+            const title = document.getElementById('authModalTitle');
+            if (title) title.textContent = (authMode === 'register') ? 'Register Account' : 'Login Account';
+            const btn = document.getElementById('authSubmitBtn');
+            if (btn) btn.textContent = (authMode === 'register') ? 'Create Account' : 'Login';
+        };
 
-        function toggleAuthMode() { openAuthModal(authMode === 'login' ? 'register' : 'login'); }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function openRedeemModal() { document.getElementById('redeemModal').style.display = 'flex'; }
+        window.toggleAuthMode = function() {
+            window.openAuthModal(authMode === 'login' ? 'register' : 'login');
+        };
+
+        window.closeModal = function(id) {
+            const m = document.getElementById(id);
+            if (m) m.style.display = 'none';
+        };
+
+        window.openRedeemModal = function() {
+            const m = document.getElementById('redeemModal');
+            if (m) m.style.display = 'flex';
+        };
 
         let currentVerifyEmail = '';
 

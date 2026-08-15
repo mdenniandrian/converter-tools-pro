@@ -243,10 +243,9 @@ class JobController
         @ini_set('zlib.output_compression', 'Off');
 
         header('X-Accel-Buffering: no');
-        header('Content-Encoding: identity');
         header('Content-Type: ' . ($contentType ?: 'application/octet-stream'));
         header('Content-Disposition: attachment; filename="' . $safeDownloadName . '"; filename*=UTF-8\'\'' . $utf8DownloadName);
-        header('Content-Length: ' . strlen($fileData));
+        // Omit manual Content-Length to let Nginx use chunked transfer encoding and eliminate NS_ERROR_NET_PARTIAL_TRANSFER
         header('Cache-Control: no-cache, no-store, must-revalidate');
         header('Pragma: no-cache');
         header('Expires: 0');

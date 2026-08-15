@@ -196,6 +196,43 @@
                                     <button type="submit" class="action-btn" style="padding: 0.7rem 1.5rem; font-size: 0.88rem;">💾 Save Telegram Config</button>
                                 </div>
                             </form>
+                        <!-- 3.5 SMTP & EMAIL VERIFICATION CONFIGURATION -->
+                        <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                            <h3 style="font-size: 1.1rem; color: #3b82f6; margin-bottom: 1rem;">📧 SMTP Email & OTP Verification Settings</h3>
+                            <form onsubmit="handleSaveSystemSettings(event)">
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
+                                    <div>
+                                        <label style="font-size: 0.8rem; color: var(--text-muted);">Require OTP Email Verification on Registration</label>
+                                        <select id="toggleEmailVerification" class="select-input" style="margin-bottom:0;">
+                                            <option value="1">🟢 ENABLED (Mandatory OTP Code)</option>
+                                            <option value="0">🔴 DISABLED (Direct Register)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.8rem; color: var(--text-muted);">SMTP Host</label>
+                                        <input type="text" id="cfgSmtpHost" class="select-input" placeholder="e.g. smtp.gmail.com or mail.yourdomain.com" style="margin-bottom:0;">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.8rem; color: var(--text-muted);">SMTP Port</label>
+                                        <input type="number" id="cfgSmtpPort" class="select-input" placeholder="587 or 465" style="margin-bottom:0;">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.8rem; color: var(--text-muted);">SMTP Username / Email</label>
+                                        <input type="text" id="cfgSmtpUsername" class="select-input" placeholder="user@gmail.com" style="margin-bottom:0;">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.8rem; color: var(--text-muted);">SMTP Password / App Password</label>
+                                        <input type="password" id="cfgSmtpPassword" class="select-input" placeholder="••••••••" style="margin-bottom:0;">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.8rem; color: var(--text-muted);">Sender Email Address (From)</label>
+                                        <input type="text" id="cfgSmtpFromAddress" class="select-input" placeholder="no-reply@converter.bangden.my.id" style="margin-bottom:0;">
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <button type="submit" class="action-btn" style="padding: 0.7rem 1.5rem; font-size: 0.88rem; background: linear-gradient(135deg, #3b82f6, #06b6d4);">💾 Save SMTP & Email Settings</button>
+                                </div>
+                            </form>
                         </div>
 
                         <!-- 4. DATABASE & STORAGE CONNECTION VISUALIZER -->

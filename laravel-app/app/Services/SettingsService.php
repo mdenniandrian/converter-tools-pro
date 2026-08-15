@@ -49,6 +49,15 @@ class SettingsService
             'telegram_bot_token' => $raw['telegram_bot_token'] ?? (getenv('TELEGRAM_BOT_TOKEN') ?: ''),
             'telegram_chat_id' => $raw['telegram_chat_id'] ?? (getenv('TELEGRAM_CHAT_ID') ?: ''),
             'enable_telegram_notif' => ($raw['enable_telegram_notif'] ?? '1') === '1',
+
+            // SMTP & Email Verification Config
+            'enable_email_verification' => ($raw['enable_email_verification'] ?? '1') === '1',
+            'smtp_host' => $raw['smtp_host'] ?? (getenv('SMTP_HOST') ?: ''),
+            'smtp_port' => (int)($raw['smtp_port'] ?? (getenv('SMTP_PORT') ?: 587)),
+            'smtp_username' => $raw['smtp_username'] ?? (getenv('SMTP_USERNAME') ?: ''),
+            'smtp_password' => $raw['smtp_password'] ?? (getenv('SMTP_PASSWORD') ?: ''),
+            'smtp_from_address' => $raw['smtp_from_address'] ?? (getenv('SMTP_FROM_ADDRESS') ?: 'no-reply@converter.bangden.my.id'),
+            'smtp_from_name' => $raw['smtp_from_name'] ?? (getenv('SMTP_FROM_NAME') ?: 'Convertify Pro'),
         ];
     }
 
@@ -60,7 +69,9 @@ class SettingsService
             'pro_price', 'pro_discount_percent', 'enterprise_price', 'enterprise_discount_percent',
             'promo_code', 'promo_discount_percent',
             'midtrans_server_key', 'midtrans_client_key', 'midtrans_is_production',
-            'wa_admin_number', 'telegram_bot_token', 'telegram_chat_id', 'enable_telegram_notif'
+            'wa_admin_number', 'telegram_bot_token', 'telegram_chat_id', 'enable_telegram_notif',
+            'enable_email_verification', 'smtp_host', 'smtp_port', 'smtp_username', 'smtp_password',
+            'smtp_from_address', 'smtp_from_name'
         ];
 
         foreach ($allowedKeys as $key) {

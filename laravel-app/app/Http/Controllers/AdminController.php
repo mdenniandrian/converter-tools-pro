@@ -45,8 +45,8 @@ class AdminController
 
         $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
         $planType = strtolower($input['plan_type'] ?? 'pro');
-        $durationDays = (int)($input['duration_days'] ?? 30);
-        $quantity = min(50, max(1, (int)($input['quantity'] ?? 1)));
+        $durationDays = (int) ($input['duration_days'] ?? 30);
+        $quantity = min(50, max(1, (int) ($input['quantity'] ?? 1)));
 
         $db = Database::getConnection();
         $generated = [];
@@ -97,7 +97,7 @@ class AdminController
             exit;
         }
 
-        $days = (int)$code['duration_days'];
+        $days = (int) $code['duration_days'];
         $expiresAt = date('Y-m-d H:i:s', strtotime("+{$days} days"));
 
         // Update User Plan
@@ -130,7 +130,7 @@ class AdminController
         $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
         $targetUserId = $input['user_id'] ?? '';
         $newPlan = strtolower($input['plan'] ?? 'free');
-        $days = (int)($input['duration_days'] ?? 30);
+        $days = (int) ($input['duration_days'] ?? 30);
 
         $expiresAt = ($newPlan === 'free') ? null : date('Y-m-d H:i:s', strtotime("+{$days} days"));
 
@@ -218,12 +218,12 @@ class AdminController
         }
 
         $msg = "🤖 <b>Convertify Pro Telegram Bot Test</b>\n\nHello Admin! Your Telegram Bot integration is working perfectly! 🚀";
-        $res = TelegramService::sendDetailed($msg);
+        $res = TelegramService::send($msg);
 
-        if ($res['success']) {
+        if ($res) {
             echo json_encode(['success' => true, 'message' => 'Telegram test notification sent successfully!']);
         } else {
-            echo json_encode(['error' => $res['error']]);
+            echo json_encode(['error' => 'Failed to send Telegram message. Please verify Bot Token & Chat ID in Backoffice.']);
         }
         exit;
     }

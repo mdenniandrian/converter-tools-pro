@@ -49,6 +49,8 @@ class Database
             "ALTER TABLE users ALTER COLUMN id TYPE VARCHAR(255);",
             "ALTER TABLE jobs ALTER COLUMN id TYPE VARCHAR(255);",
             "ALTER TABLE jobs ALTER COLUMN user_id TYPE VARCHAR(255) USING user_id::VARCHAR;",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMP NULL;",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_code VARCHAR(64) NULL;",
             "ALTER TABLE activation_codes ALTER COLUMN id TYPE VARCHAR(255);"
         ];
 

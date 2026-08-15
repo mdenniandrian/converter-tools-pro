@@ -57,6 +57,22 @@ if ($uri === '/api/auth/login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+if ($uri === '/api/auth/verify-email' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json');
+    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+    $res = AuthService::verifyEmail($input['email'] ?? '', $input['code'] ?? '');
+    echo json_encode($res);
+    exit;
+}
+
+if ($uri === '/api/auth/resend-code' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json');
+    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+    $res = AuthService::resendCode($input['email'] ?? '');
+    echo json_encode($res);
+    exit;
+}
+
 if ($uri === '/api/auth/logout') {
     header('Content-Type: application/json');
     AuthService::logout();
@@ -527,12 +543,15 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function openRedeemModal() { document.getElementById('redeemModal').style.display = 'flex'; }
 
+        let currentVerifyEmail = '';
+
         async function handleAuthSubmit(e) {
             e.preventDefault();
             const endpoint = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+            const emailVal = document.getElementById('authEmail').value;
             const body = {
                 name: document.getElementById('authName').value,
-                email: document.getElementById('authEmail').value,
+                email: emailVal,
                 password: document.getElementById('authPassword').value
             };
 
@@ -543,11 +562,57 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
                     body: JSON.stringify(body)
                 });
                 const data = await res.json();
-                if (data.success) {
-                    showToast("Authentication successful! Welcome.", 'success');
+                if (data.requires_verification) {
+                    currentVerifyEmail = data.email || emailVal;
+                    closeModal('authModal');
+                    openOtpModal(currentVerifyEmail, data.message || data.error);
+                } else if (data.success) {
+                    showToast(data.message || "Authentication successful! Welcome.", 'success');
                     setTimeout(() => location.reload(), 1000);
                 } else {
                     showToast(data.error || "Authentication failed", 'error');
+                }
+            } catch (err) { showToast("Error connecting to server", 'error'); }
+        }
+
+        function openOtpModal(email, msg) {
+            currentVerifyEmail = email;
+            if (document.getElementById('otpEmailSpan')) document.getElementById('otpEmailSpan').textContent = email;
+            if (msg) showToast(msg, 'info');
+            document.getElementById('otpModal').style.display = 'flex';
+        }
+
+        async function handleVerifyOtpSubmit(e) {
+            e.preventDefault();
+            const code = document.getElementById('otpCodeInput').value;
+            try {
+                const res = await fetch('/api/auth/verify-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: currentVerifyEmail, code })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message || "Email verified successfully!", 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(data.error || "Verification failed", 'error');
+                }
+            } catch (err) { showToast("Error connecting to server", 'error'); }
+        }
+
+        async function handleResendOtp() {
+            try {
+                const res = await fetch('/api/auth/resend-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: currentVerifyEmail })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.error || "Failed to resend OTP", 'error');
                 }
             } catch (err) { showToast("Error connecting to server", 'error'); }
         }
@@ -600,7 +665,13 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
                 enable_midtrans: document.getElementById('toggleMidtrans').value === '1',
                 midtrans_is_production: document.getElementById('cfgMidtransMode').value === '1',
                 enable_whatsapp: document.getElementById('toggleWhatsApp').value === '1',
-                enable_sandbox_sim: document.getElementById('toggleSandboxSim').value === '1'
+                enable_sandbox_sim: document.getElementById('toggleSandboxSim').value === '1',
+                enable_email_verification: document.getElementById('toggleEmailVerification') ? document.getElementById('toggleEmailVerification').value === '1' : true,
+                smtp_host: document.getElementById('cfgSmtpHost') ? document.getElementById('cfgSmtpHost').value : '',
+                smtp_port: document.getElementById('cfgSmtpPort') ? document.getElementById('cfgSmtpPort').value : '587',
+                smtp_username: document.getElementById('cfgSmtpUsername') ? document.getElementById('cfgSmtpUsername').value : '',
+                smtp_password: document.getElementById('cfgSmtpPassword') ? document.getElementById('cfgSmtpPassword').value : '',
+                smtp_from_address: document.getElementById('cfgSmtpFromAddress') ? document.getElementById('cfgSmtpFromAddress').value : ''
             };
 
             try {
@@ -676,6 +747,13 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
                     if (document.getElementById('cfgTelegramBotToken')) document.getElementById('cfgTelegramBotToken').value = s.telegram_bot_token || '';
                     if (document.getElementById('cfgTelegramChatId')) document.getElementById('cfgTelegramChatId').value = s.telegram_chat_id || '';
                     if (document.getElementById('cfgEnableTelegramNotif')) document.getElementById('cfgEnableTelegramNotif').value = s.enable_telegram_notif ? '1' : '0';
+
+                    if (document.getElementById('toggleEmailVerification')) document.getElementById('toggleEmailVerification').value = s.enable_email_verification ? '1' : '0';
+                    if (document.getElementById('cfgSmtpHost')) document.getElementById('cfgSmtpHost').value = s.smtp_host || '';
+                    if (document.getElementById('cfgSmtpPort')) document.getElementById('cfgSmtpPort').value = s.smtp_port || 587;
+                    if (document.getElementById('cfgSmtpUsername')) document.getElementById('cfgSmtpUsername').value = s.smtp_username || '';
+                    if (document.getElementById('cfgSmtpPassword')) document.getElementById('cfgSmtpPassword').value = s.smtp_password || '';
+                    if (document.getElementById('cfgSmtpFromAddress')) document.getElementById('cfgSmtpFromAddress').value = s.smtp_from_address || 'no-reply@converter.bangden.my.id';
                 }
 
                 if (data.stats) {

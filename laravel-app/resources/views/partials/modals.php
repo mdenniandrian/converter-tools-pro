@@ -74,5 +74,24 @@
         </div>
     </div>
 
+    <!-- MODAL 5: OTP EMAIL VERIFICATION -->
+    <div class="modal-overlay" id="otpModal" style="display: none;">
+        <div class="modal-card" style="text-align: center; max-width: 440px;">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">📩</div>
+            <h3 style="font-size: 1.3rem; font-weight: 800; color: #06b6d4; margin-bottom: 0.5rem;">Verifikasi Email Anda</h3>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.2rem; line-height: 1.5;">
+                Masukkan 6-digit kode OTP yang telah dikirim ke <br><strong style="color: #fff;" id="otpEmailSpan">email Anda</strong>.
+            </p>
+            <form onsubmit="handleVerifyOtpSubmit(event)">
+                <input type="text" id="otpCodeInput" class="select-input" required maxlength="6" pattern="[0-9]{6}" placeholder="1 2 3 4 5 6" style="font-size: 1.8rem; font-weight: 800; letter-spacing: 12px; text-align: center; width: 100%; margin-bottom: 1rem; color: #06b6d4;">
+                <button type="submit" class="action-btn" style="width: 100%; padding: 0.8rem;">✅ Verifikasi Email</button>
+            </form>
+            <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
+                <button type="button" class="back-btn" onclick="handleResendOtp()" style="padding: 0.4rem 0.8rem; font-size: 0.78rem;">🔄 Kirim Ulang OTP</button>
+                <button type="button" class="back-btn" onclick="closeModal('otpModal')" style="padding: 0.4rem 0.8rem; font-size: 0.78rem;">Batal</button>
+            </div>
+        </div>
+    </div>
+
     <!-- GLOBAL TOAST NOTIFICATION CONTAINER -->
     <div id="toastContainer" style="position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; max-width: 400px; pointer-events: none;"></div>

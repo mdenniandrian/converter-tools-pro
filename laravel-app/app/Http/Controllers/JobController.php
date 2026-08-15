@@ -164,7 +164,7 @@ class JobController
         $stmt->execute([$jobId]);
         $job = $stmt->fetch();
 
-        if (!$job || $job['status'] !== 'done' || empty($job['output_s3_key'])) {
+        if (!$job || !in_array($job['status'], ['done', 'downloaded']) || empty($job['output_s3_key'])) {
             http_response_code(404);
             echo "File not ready or expired.";
             exit;

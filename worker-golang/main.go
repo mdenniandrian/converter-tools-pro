@@ -36,20 +36,20 @@ type JobPayload struct {
 
 // Config holds environment parameters
 type Config struct {
-	RedisHost    string
-	RedisPort    string
-	RedisQueue   string
-	DBHost       string
-	DBPort       string
-	DBUser       string
-	DBPassword   string
-	DBName       string
-	S3Endpoint   string
-	S3AccessKey  string
-	S3SecretKey  string
-	S3Bucket     string
-	S3UseSSL     bool
-	MaxWorkers   int
+	RedisHost   string
+	RedisPort   string
+	RedisQueue  string
+	DBHost      string
+	DBPort      string
+	DBUser      string
+	DBPassword  string
+	DBName      string
+	S3Endpoint  string
+	S3AccessKey string
+	S3SecretKey string
+	S3Bucket    string
+	S3UseSSL    bool
+	MaxWorkers  int
 }
 
 func loadConfig() Config {
@@ -262,7 +262,7 @@ func convertWithLibreOffice(ctx context.Context, tempDir, inputPath, targetForma
 	if ext == ".pdf" && (target == "xlsx" || target == "xls") {
 		log.Println("[Worker PDF2XLSX] Executing PDF -> HTML -> Calc XLSX Pipeline...")
 		htmlPath := filepath.Join(tempDir, fmt.Sprintf("%s.html", baseName))
-		
+
 		cmdHTML := exec.CommandContext(ctx, "pdftohtml", "-s", "-i", "-noframes", inputPath, htmlPath)
 		cmdHTML.Run()
 
@@ -320,7 +320,7 @@ func convertWithLibreOffice(ctx context.Context, tempDir, inputPath, targetForma
 func compressFile(ctx context.Context, tempDir, inputPath, targetFormat string) (string, error) {
 	ext := strings.ToLower(filepath.Ext(inputPath))
 	baseName := strings.TrimSuffix(filepath.Base(inputPath), filepath.Ext(inputPath))
-	
+
 	outExt := ext
 	if targetFormat == "zip" {
 		outExt = ".zip"

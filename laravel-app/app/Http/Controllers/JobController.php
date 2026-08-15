@@ -198,12 +198,27 @@ class JobController
         }
 
         // 3. Fallback to native PHP HTTP stream wrapper if cURL failed
-        if ($httpCode !== 200 || !$fileData) {
+        if ($httpCode !== 200 || !$fileData || str_contains($fileData, '<Error>')) {
             $streamCtx = stream_context_create(['http' => ['timeout' => 30]]);
             $streamContent = @file_get_contents($fileUrl, false, $streamCtx);
-            if ($streamContent !== false && strlen($streamContent) > 0) {
+            if ($streamContent !== false && strlen($streamContent) > 0 && !str_contains($streamContent, '<Error>')) {
                 $fileData = $streamContent;
                 $httpCode = 200;
+            }
+        }
+
+        // 4. Fallback: Try upper/lowercase extension variation if S3 Key case differed
+        if ($httpCode !== 200 || !$fileData || str_contains($fileData, '<Error>')) {
+            $ext = pathinfo($cleanKey, PATHINFO_EXTENSION);
+            if ($ext) {
+                $baseKey = substr($cleanKey, 0, -strlen($ext));
+                $altExt = (strtolower($ext) === $ext) ? strtoupper($ext) : strtolower($ext);
+                $altUrl = "{$minioHost}/{$bucket}/{$baseKey}{$altExt}";
+                $altContent = @file_get_contents($altUrl);
+                if ($altContent !== false && strlen($altContent) > 0 && !str_contains($altContent, '<Error>')) {
+                    $fileData = $altContent;
+                    $httpCode = 200;
+                }
             }
         }
 

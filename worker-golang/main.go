@@ -210,7 +210,7 @@ func processJob(ctx context.Context, db *sql.DB, minioClient *minio.Client, cfg 
 	}
 
 	if job.OutputS3Key == "" {
-		outExt := filepath.Ext(outputLocalPath)
+		outExt := strings.ToLower(filepath.Ext(outputLocalPath))
 		if outExt == "" {
 			outExt = "." + targetLower
 		}

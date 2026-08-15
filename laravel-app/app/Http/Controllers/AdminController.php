@@ -218,12 +218,12 @@ class AdminController
         }
 
         $msg = "🤖 <b>Convertify Pro Telegram Bot Test</b>\n\nHello Admin! Your Telegram Bot integration is working perfectly! 🚀";
-        $res = TelegramService::send($msg);
+        $res = TelegramService::sendDetailed($msg);
 
-        if ($res) {
+        if ($res['success']) {
             echo json_encode(['success' => true, 'message' => 'Telegram test notification sent successfully!']);
         } else {
-            echo json_encode(['error' => 'Failed to send Telegram message. Please verify Bot Token & Chat ID in Backoffice.']);
+            echo json_encode(['error' => $res['error']]);
         }
         exit;
     }

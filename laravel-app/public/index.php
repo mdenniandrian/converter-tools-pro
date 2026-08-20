@@ -156,9 +156,9 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
         .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
 
         /* NAVBAR */
-        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); background: rgba(9, 13, 22, 0.8); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 100; }
+        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 2rem; border-bottom: 1px solid var(--border-color); background: rgba(9, 13, 22, 0.85); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 100; flex-wrap: wrap; gap: 0.8rem; }
         .logo { font-size: 1.5rem; font-weight: 800; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
-        .nav-links { display: flex; gap: 0.8rem; align-items: center; }
+        .nav-links { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
         .nav-item { background: transparent; border: none; color: var(--text-muted); font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.2s; padding: 0.5rem 0.8rem; border-radius: 8px; }
         .nav-item:hover, .nav-item.active { color: #fff; background: rgba(255, 255, 255, 0.05); }
         
@@ -234,6 +234,8 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
     <?php require __DIR__ . '/../resources/views/partials/workspace.php'; ?>
     <?php require __DIR__ . '/../resources/views/partials/pricing.php'; ?>
     <?php require __DIR__ . '/../resources/views/partials/admin_backoffice.php'; ?>
+    </div><!-- End .container -->
+
     <?php require __DIR__ . '/../resources/views/partials/modals.php'; ?>
 
     <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.8rem;">
@@ -541,9 +543,27 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
             if (title) title.textContent = (authMode === 'register') ? 'Register Account' : 'Login Account';
             const btn = document.getElementById('authSubmitBtn');
             if (btn) btn.textContent = (authMode === 'register') ? 'Create Account' : 'Login';
+
+            const tabLogin = document.getElementById('authTabLogin');
+            const tabRegister = document.getElementById('authTabRegister');
+            if (tabLogin && tabRegister) {
+                if (authMode === 'register') {
+                    tabRegister.classList.add('active');
+                    tabLogin.classList.remove('active');
+                } else {
+                    tabLogin.classList.add('active');
+                    tabRegister.classList.remove('active');
+                }
+            }
+
+            setTimeout(() => {
+                const targetInput = (authMode === 'register') ? document.getElementById('authName') : document.getElementById('authEmail');
+                if (targetInput) targetInput.focus();
+            }, 50);
         };
 
-        window.toggleAuthMode = function() {
+        window.toggleAuthMode = function(e) {
+            if (e && e.preventDefault) e.preventDefault();
             window.openAuthModal(authMode === 'login' ? 'register' : 'login');
         };
 
@@ -551,6 +571,12 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
             const m = document.getElementById(id);
             if (m) m.style.display = 'none';
         };
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+            }
+        });
 
         window.openRedeemModal = function() {
             const m = document.getElementById('redeemModal');

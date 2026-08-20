@@ -1,10 +1,17 @@
     <!-- MODAL 1: AUTH LOGIN / REGISTER -->
-    <div class="modal-overlay" id="authModal" style="display: none;">
+    <div class="modal-overlay" id="authModal" style="display: none;" onclick="if(event.target===this)closeModal('authModal')">
         <div class="modal-card">
             <div class="modal-header">
                 <h3 id="authModalTitle">Login Account</h3>
-                <button class="back-btn" onclick="closeModal('authModal')">✕</button>
+                <button type="button" class="back-btn" onclick="closeModal('authModal')">✕</button>
             </div>
+
+            <!-- Auth Switcher Tabs -->
+            <div style="display: flex; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 12px; margin-bottom: 1.2rem; gap: 4px;">
+                <button type="button" id="authTabLogin" class="sub-menu-pill active" style="flex: 1; text-align: center; border: none;" onclick="openAuthModal('login')">Login</button>
+                <button type="button" id="authTabRegister" class="sub-menu-pill" style="flex: 1; text-align: center; border: none;" onclick="openAuthModal('register')">Register Account</button>
+            </div>
+
             <form onsubmit="handleAuthSubmit(event)">
                 <div id="registerNameGroup" style="display: none;">
                     <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Full Name</label>
@@ -22,7 +29,7 @@
                 <button type="submit" class="action-btn" id="authSubmitBtn" style="width: 100%; margin-top: 1rem;">Login</button>
             </form>
             <div style="margin-top: 1rem; text-align: center; font-size: 0.82rem; color: var(--text-muted);">
-                <a href="#" style="color: #06b6d4;" onclick="toggleAuthMode()">Switch between Login / Register</a>
+                <a href="javascript:void(0)" style="color: #06b6d4;" onclick="toggleAuthMode(event)">Switch between Login / Register</a>
             </div>
         </div>
     </div>

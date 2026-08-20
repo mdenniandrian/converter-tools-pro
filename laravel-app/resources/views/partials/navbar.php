@@ -11,13 +11,13 @@
 
             <?php if ($authUser): ?>
                 <span class="badge-plan plan-<?= strtolower($authUser['plan']) ?>"><?= strtoupper($authUser['plan']) ?></span>
-                <button class="nav-item" style="color: #a78bfa;" onclick="openRedeemModal()">🔑 Redeem Code</button>
+                <button type="button" class="nav-item" style="color: #a78bfa;" onclick="openRedeemModal()">🔑 Redeem Code</button>
                 <?php if ($authUser['role'] === 'admin'): ?>
-                    <button class="nav-item" style="color: #ec4899;" onclick="openAdminView()">🏢 Backoffice</button>
+                    <button type="button" class="nav-item" style="color: #ec4899;" onclick="openAdminView()">🏢 Backoffice</button>
                 <?php endif; ?>
-                <button class="nav-item" onclick="logoutUser()">Logout (<?= htmlspecialchars($authUser['name']) ?>)</button>
+                <button type="button" class="nav-item" onclick="logoutUser()">Logout (<?= htmlspecialchars($authUser['name']) ?>)</button>
             <?php else: ?>
-                <button class="nav-item" style="color: #a78bfa;" onclick="openAuthModal('login')">Login / Sign Up</button>
+                <button type="button" class="nav-item" id="navLoginBtn" style="color: #a78bfa;" onclick="openAuthModal('login')">Login / Sign Up</button>
             <?php endif; ?>
         </div>
     </nav>

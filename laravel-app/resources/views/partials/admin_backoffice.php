@@ -14,22 +14,22 @@
                         </div>
 
                         <div style="display: flex; flex-direction: column; gap: 0.4rem;" id="adminSidebarNav">
-                            <button class="admin-nav-item active" onclick="switchAdminTab('overview', this)">
+                            <button type="button" class="admin-nav-item active" onclick="switchAdminTab('overview', this)">
                                 <span>📊</span> Overview & Stats
                             </button>
-                            <button class="admin-nav-item" onclick="switchAdminTab('payment', this)">
+                            <button type="button" class="admin-nav-item" onclick="switchAdminTab('payment', this)">
                                 <span>⚙️</span> System & Pricing
                             </button>
-                            <button class="admin-nav-item" onclick="switchAdminTab('codes', this)">
+                            <button type="button" class="admin-nav-item" onclick="switchAdminTab('codes', this)">
                                 <span>🔑</span> Activation Codes
                             </button>
-                            <button class="admin-nav-item" onclick="switchAdminTab('users', this)">
+                            <button type="button" class="admin-nav-item" onclick="switchAdminTab('users', this)">
                                 <span>👥</span> User Management
                             </button>
                         </div>
                     </div>
 
-                    <button class="back-btn" style="width: 100%; text-align: center; background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" onclick="showToolsGrid()">← Exit Backoffice</button>
+                    <button type="button" class="back-btn" style="width: 100%; text-align: center; background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" onclick="showToolsGrid()">← Exit Backoffice</button>
                 </div>
 
                 <!-- RIGHT MAIN CONTENT WORKSPACE -->
@@ -108,60 +108,61 @@
                                     </div>
                                 </div>
 
-                        <!-- 2. PAYMENT GATEWAY KEYS & TOGGLES -->
-                        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.2rem; margin-top: 1rem;">
-                            <h3 style="font-size: 1.1rem; color: #a78bfa; margin-bottom: 1rem;">💳 Midtrans & WhatsApp Gateway Config</h3>
-                            
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                                    <div>
-                                        <label style="font-size: 0.8rem; color: var(--text-muted);">Midtrans Server Key</label>
-                                        <input type="text" id="cfgMidtransServerKey" class="select-input" placeholder="Mid-server-..." style="margin-bottom:0;">
+                                <!-- 2. PAYMENT GATEWAY KEYS & TOGGLES -->
+                                <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.2rem; margin-top: 1rem;">
+                                    <h3 style="font-size: 1.1rem; color: #a78bfa; margin-bottom: 1rem;">💳 Midtrans & WhatsApp Gateway Config</h3>
+                                    
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                        <div>
+                                            <label style="font-size: 0.8rem; color: var(--text-muted);">Midtrans Server Key</label>
+                                            <input type="text" id="cfgMidtransServerKey" class="select-input" placeholder="Mid-server-..." style="margin-bottom:0;">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 0.8rem; color: var(--text-muted);">Midtrans Client Key</label>
+                                            <input type="text" id="cfgMidtransClientKey" class="select-input" placeholder="Mid-client-..." style="margin-bottom:0;">
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label style="font-size: 0.8rem; color: var(--text-muted);">Midtrans Client Key</label>
-                                        <input type="text" id="cfgMidtransClientKey" class="select-input" placeholder="Mid-client-..." style="margin-bottom:0;">
-                                    </div>
-                                </div>
 
-                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem;">
-                                    <div>
-                                        <label style="font-size: 0.8rem; color: var(--text-muted);">WhatsApp Admin Number</label>
-                                        <input type="text" id="cfgWaAdminNumber" class="select-input" placeholder="6282113237920" style="margin-bottom:0;">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem;">
+                                        <div>
+                                            <label style="font-size: 0.8rem; color: var(--text-muted);">WhatsApp Admin Number</label>
+                                            <input type="text" id="cfgWaAdminNumber" class="select-input" placeholder="6282113237920" style="margin-bottom:0;">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 0.8rem; color: var(--text-muted);">Midtrans Gateway Status</label>
+                                            <select id="toggleMidtrans" class="select-input" style="margin-bottom:0;">
+                                                <option value="1">🟢 ENABLED</option>
+                                                <option value="0">🔴 DISABLED</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 0.8rem; color: var(--text-muted);">Midtrans Mode</label>
+                                            <select id="cfgMidtransMode" class="select-input" style="margin-bottom:0;">
+                                                <option value="1">⚡ Production Mode</option>
+                                                <option value="0">🧪 Sandbox Mode</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label style="font-size: 0.8rem; color: var(--text-muted);">Midtrans Gateway Status</label>
-                                        <select id="toggleMidtrans" class="select-input" style="margin-bottom:0;">
-                                            <option value="1">🟢 ENABLED</option>
-                                            <option value="0">🔴 DISABLED</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label style="font-size: 0.8rem; color: var(--text-muted);">Midtrans Mode</label>
-                                        <select id="cfgMidtransMode" class="select-input" style="margin-bottom:0;">
-                                            <option value="1">⚡ Production Mode</option>
-                                            <option value="0">🧪 Sandbox Mode</option>
-                                        </select>
-                                    </div>
-                                </div>
 
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem;">
-                                    <div>
-                                        <label style="font-size: 0.8rem; color: var(--text-muted);">WhatsApp Order Status</label>
-                                        <select id="toggleWhatsApp" class="select-input" style="margin-bottom:0;">
-                                            <option value="1">🟢 ENABLED</option>
-                                            <option value="0">🔴 DISABLED</option>
-                                        </select>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem;">
+                                        <div>
+                                            <label style="font-size: 0.8rem; color: var(--text-muted);">WhatsApp Order Status</label>
+                                            <select id="toggleWhatsApp" class="select-input" style="margin-bottom:0;">
+                                                <option value="1">🟢 ENABLED</option>
+                                                <option value="0">🔴 DISABLED</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 0.8rem; color: var(--text-muted);">Sandbox Simulator Status</label>
+                                            <select id="toggleSandboxSim" class="select-input" style="margin-bottom:0;">
+                                                <option value="1">🟢 ENABLED</option>
+                                                <option value="0">🔴 DISABLED</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label style="font-size: 0.8rem; color: var(--text-muted);">Sandbox Simulator Status</label>
-                                        <select id="toggleSandboxSim" class="select-input" style="margin-bottom:0;">
-                                            <option value="1">🟢 ENABLED</option>
-                                            <option value="0">🔴 DISABLED</option>
-                                        </select>
-                                    </div>
-                                </div>
 
-                                <button type="submit" class="action-btn" style="padding: 0.7rem 1.5rem; font-size: 0.88rem; background: linear-gradient(135deg, #f59e0b, #ec4899);">💾 Save Pricing & Gateway Settings</button>
+                                    <button type="submit" class="action-btn" style="padding: 0.7rem 1.5rem; font-size: 0.88rem; background: linear-gradient(135deg, #f59e0b, #ec4899);">💾 Save Pricing & Gateway Settings</button>
+                                </div>
                             </form>
                         </div>
 
@@ -195,6 +196,8 @@
                                     <button type="submit" class="action-btn" style="padding: 0.7rem 1.5rem; font-size: 0.88rem;">💾 Save Telegram Config</button>
                                 </div>
                             </form>
+                        </div>
+
                         <!-- 3.5 SMTP & EMAIL VERIFICATION CONFIGURATION -->
                         <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 1.5rem; margin-bottom: 1.5rem;">
                             <h3 style="font-size: 1.1rem; color: #3b82f6; margin-bottom: 1rem;">📧 SMTP Email & OTP Verification Settings</h3>

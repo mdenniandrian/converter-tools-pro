@@ -656,6 +656,7 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
                 showToast("Error connecting to server", 'error');
             }
         }
+        window.handleAuthSubmit = handleAuthSubmit;
 
         function openOtpModal(email, msg) {
             currentVerifyEmail = email;

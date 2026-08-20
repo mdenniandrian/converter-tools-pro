@@ -164,7 +164,6 @@
                                 <button type="submit" class="action-btn" style="padding: 0.7rem 1.5rem; font-size: 0.88rem; background: linear-gradient(135deg, #f59e0b, #ec4899);">💾 Save Pricing & Gateway Settings</button>
                             </form>
                         </div>
-                        </div>
 
                         <!-- 3. TELEGRAM BOT INTEGRATION CARD -->
                         <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; padding: 1.5rem; margin-bottom: 1.5rem;">

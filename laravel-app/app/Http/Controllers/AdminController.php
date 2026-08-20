@@ -228,6 +228,39 @@ class AdminController
         exit;
     }
 
+    public static function testLdap(): void
+    {
+        header('Content-Type: application/json');
+        $user = AuthService::getUser();
+        if (!$user || $user['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Unauthorized admin access']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $res = \App\Services\LdapService::testConnection($input);
+        echo json_encode($res);
+        exit;
+    }
+
+    public static function testEmail(): void
+    {
+        header('Content-Type: application/json');
+        $user = AuthService::getUser();
+        if (!$user || $user['role'] !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Unauthorized admin access']);
+            exit;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $targetEmail = $input['target_email'] ?? $user['email'];
+        $res = \App\Services\EmailService::sendTestEmail($targetEmail);
+        echo json_encode($res);
+        exit;
+    }
+
     public static function simulatePayment(): void
     {
         header('Content-Type: application/json');

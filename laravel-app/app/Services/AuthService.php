@@ -203,29 +203,66 @@ class AuthService
 
     public static function login(string $email, string $password): array
     {
-        $email = strtolower(trim($email));
+        $emailInput = strtolower(trim($email));
+        $s = SettingsService::getAll();
+
+        // 1. Attempt LDAP Authentication if enabled
+        if (!empty($s['enable_ldap'])) {
+            $ldapRes = LdapService::authenticate($emailInput, $password);
+            if ($ldapRes['success']) {
+                $db = Database::getConnection();
+                $ldapEmail = strtolower($ldapRes['email']);
+                
+                // Search local user or create auto-provisioned LDAP user
+                $stmt = $db->prepare("SELECT id, name, role FROM users WHERE email = ? OR email = ?");
+                $stmt->execute([$emailInput, $ldapEmail]);
+                $user = $stmt->fetch();
+
+                if (!$user) {
+                    // Provision new user from LDAP
+                    $userId = Database::generateUuid();
+                    $userName = $ldapRes['name'] ?: 'LDAP User';
+                    $role = 'user';
+                    
+                    if (str_contains($emailInput, 'admin') || str_contains($ldapEmail, 'admin')) {
+                        $role = 'admin';
+                    }
+
+                    $insert = $db->prepare("INSERT INTO users (id, name, email, password, role, plan, email_verified_at) VALUES (?, ?, ?, ?, ?, 'pro', NOW())");
+                    $insert->execute([$userId, $userName, $ldapEmail, password_hash($password, PASSWORD_BCRYPT), $role]);
+                    $userIdToLogin = $userId;
+                } else {
+                    $userIdToLogin = $user['id'];
+                }
+
+                self::initSession();
+                $_SESSION['user_id'] = $userIdToLogin;
+                return ['success' => true, 'message' => 'Login LDAP berhasil! Selamat datang.'];
+            }
+        }
+
+        // 2. Fallback to Local Database Authentication
         $db = Database::getConnection();
         $stmt = $db->prepare("SELECT id, name, password, email_verified_at, verification_code FROM users WHERE email = ?");
-        $stmt->execute([$email]);
+        $stmt->execute([$emailInput]);
         $user = $stmt->fetch();
 
         if (!$user || !password_verify($password, $user['password'])) {
-            return ['error' => 'Invalid email address or password.'];
+            return ['error' => 'Email/Username atau password salah.'];
         }
 
-        $s = SettingsService::getAll();
         if (!empty($s['enable_email_verification']) && empty($user['email_verified_at'])) {
             // Re-generate OTP if missing
             if (empty($user['verification_code'])) {
                 $otpCode = sprintf('%06d', mt_rand(100000, 999999));
                 $update = $db->prepare("UPDATE users SET verification_code = ? WHERE id = ?");
                 $update->execute([$otpCode, $user['id']]);
-                EmailService::sendVerificationOtp($email, $user['name'] ?: 'User', $otpCode);
+                EmailService::sendVerificationOtp($emailInput, $user['name'] ?: 'User', $otpCode);
             }
             return [
                 'error' => 'Email Anda belum diverifikasi. Silakan masukkan kode OTP yang telah dikirim ke email Anda.',
                 'requires_verification' => true,
-                'email' => $email
+                'email' => $emailInput
             ];
         }
 

@@ -123,6 +123,8 @@ if ($uri === '/api/admin/user/role' && $_SERVER['REQUEST_METHOD'] === 'POST') Ad
 if ($uri === '/api/admin/user/delete' && $_SERVER['REQUEST_METHOD'] === 'POST') AdminController::deleteUser();
 if ($uri === '/api/admin/settings' && $_SERVER['REQUEST_METHOD'] === 'POST') AdminController::updateSettings();
 if ($uri === '/api/admin/test-telegram' && $_SERVER['REQUEST_METHOD'] === 'POST') AdminController::testTelegram();
+if ($uri === '/api/admin/test-ldap' && $_SERVER['REQUEST_METHOD'] === 'POST') AdminController::testLdap();
+if ($uri === '/api/admin/test-email' && $_SERVER['REQUEST_METHOD'] === 'POST') AdminController::testEmail();
 if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') AdminController::simulatePayment();
 
 ?>
@@ -761,25 +763,33 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
         async function handleSaveSystemSettings(e) {
             e.preventDefault();
             const body = {
-                pro_price: document.getElementById('cfgProPrice').value,
-                pro_discount_percent: document.getElementById('cfgProDiscountPercent').value,
-                enterprise_price: document.getElementById('cfgEnterprisePrice').value,
-                enterprise_discount_percent: document.getElementById('cfgEnterpriseDiscountPercent').value,
-                promo_code: document.getElementById('cfgPromoCode').value,
-                promo_discount_percent: document.getElementById('cfgPromoDiscountPercent').value,
-                midtrans_server_key: document.getElementById('cfgMidtransServerKey').value,
-                midtrans_client_key: document.getElementById('cfgMidtransClientKey').value,
-                wa_admin_number: document.getElementById('cfgWaAdminNumber').value,
-                enable_midtrans: document.getElementById('toggleMidtrans').value === '1',
-                midtrans_is_production: document.getElementById('cfgMidtransMode').value === '1',
-                enable_whatsapp: document.getElementById('toggleWhatsApp').value === '1',
-                enable_sandbox_sim: document.getElementById('toggleSandboxSim').value === '1',
-                enable_email_verification: document.getElementById('toggleEmailVerification') ? document.getElementById('toggleEmailVerification').value === '1' : true,
+                pro_price: document.getElementById('cfgProPrice') ? document.getElementById('cfgProPrice').value : '49000',
+                pro_discount_percent: document.getElementById('cfgProDiscountPercent') ? document.getElementById('cfgProDiscountPercent').value : '20',
+                enterprise_price: document.getElementById('cfgEnterprisePrice') ? document.getElementById('cfgEnterprisePrice').value : '149000',
+                enterprise_discount_percent: document.getElementById('cfgEnterpriseDiscountPercent') ? document.getElementById('cfgEnterpriseDiscountPercent').value : '25',
+                promo_code: document.getElementById('cfgPromoCode') ? document.getElementById('cfgPromoCode').value : 'DISCOUNT20',
+                promo_discount_percent: document.getElementById('cfgPromoDiscountPercent') ? document.getElementById('cfgPromoDiscountPercent').value : '10',
+                midtrans_server_key: document.getElementById('cfgMidtransServerKey') ? document.getElementById('cfgMidtransServerKey').value : '',
+                midtrans_client_key: document.getElementById('cfgMidtransClientKey') ? document.getElementById('cfgMidtransClientKey').value : '',
+                wa_admin_number: document.getElementById('cfgWaAdminNumber') ? document.getElementById('cfgWaAdminNumber').value : '',
+                enable_midtrans: document.getElementById('toggleMidtrans') ? document.getElementById('toggleMidtrans').value === '1' : true,
+                midtrans_is_production: document.getElementById('cfgMidtransMode') ? document.getElementById('cfgMidtransMode').value === '1' : true,
+                enable_whatsapp: document.getElementById('toggleWhatsApp') ? document.getElementById('toggleWhatsApp').value === '1' : true,
+                enable_sandbox_sim: document.getElementById('toggleSandboxSim') ? document.getElementById('toggleSandboxSim').value === '1' : true,
+                enable_email_verification: document.getElementById('toggleEmailVerification') ? document.getElementById('toggleEmailVerification').value === '1' : false,
                 smtp_host: document.getElementById('cfgSmtpHost') ? document.getElementById('cfgSmtpHost').value : '',
                 smtp_port: document.getElementById('cfgSmtpPort') ? document.getElementById('cfgSmtpPort').value : '587',
                 smtp_username: document.getElementById('cfgSmtpUsername') ? document.getElementById('cfgSmtpUsername').value : '',
                 smtp_password: document.getElementById('cfgSmtpPassword') ? document.getElementById('cfgSmtpPassword').value : '',
-                smtp_from_address: document.getElementById('cfgSmtpFromAddress') ? document.getElementById('cfgSmtpFromAddress').value : ''
+                smtp_from_address: document.getElementById('cfgSmtpFromAddress') ? document.getElementById('cfgSmtpFromAddress').value : '',
+                enable_ldap: document.getElementById('toggleLdap') ? document.getElementById('toggleLdap').value === '1' : false,
+                ldap_host: document.getElementById('cfgLdapHost') ? document.getElementById('cfgLdapHost').value : '',
+                ldap_port: document.getElementById('cfgLdapPort') ? document.getElementById('cfgLdapPort').value : '389',
+                ldap_base_dn: document.getElementById('cfgLdapBaseDn') ? document.getElementById('cfgLdapBaseDn').value : '',
+                ldap_bind_dn: document.getElementById('cfgLdapBindDn') ? document.getElementById('cfgLdapBindDn').value : '',
+                ldap_bind_password: document.getElementById('cfgLdapBindPass') ? document.getElementById('cfgLdapBindPass').value : '',
+                ldap_user_attribute: document.getElementById('cfgLdapUserAttr') ? document.getElementById('cfgLdapUserAttr').value : 'uid',
+                ldap_use_tls: document.getElementById('cfgLdapUseTls') ? document.getElementById('cfgLdapUseTls').value === '1' : false
             };
 
             try {
@@ -793,6 +803,41 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
                 else showToast(data.error || "Failed to save settings", 'error');
             } catch (err) { showToast("Error connecting to server", 'error'); }
         }
+
+        async function handleTestLdap() {
+            const body = {
+                ldap_host: document.getElementById('cfgLdapHost') ? document.getElementById('cfgLdapHost').value : '',
+                ldap_port: document.getElementById('cfgLdapPort') ? document.getElementById('cfgLdapPort').value : '389',
+                ldap_bind_dn: document.getElementById('cfgLdapBindDn') ? document.getElementById('cfgLdapBindDn').value : '',
+                ldap_bind_password: document.getElementById('cfgLdapBindPass') ? document.getElementById('cfgLdapBindPass').value : '',
+                ldap_use_tls: document.getElementById('cfgLdapUseTls') ? document.getElementById('cfgLdapUseTls').value === '1' : false
+            };
+
+            showToast("Memeriksa koneksi LDAP Server...", 'info');
+            try {
+                const res = await fetch('/api/admin/test-ldap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (data.success) showToast(data.message, 'success');
+                else showToast(data.error || "Gagal terhubung ke LDAP Server", 'error');
+            } catch (err) { showToast("Gagal melakukan pengujian LDAP", 'error'); }
+        }
+
+        async function handleTestEmail() {
+            showToast("Mengirim email uji coba ke admin...", 'info');
+            try {
+                const res = await fetch('/api/admin/test-email', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) showToast("Test Email berhasil dikirim! Silakan periksa kotak masuk/spam.", 'success');
+                else showToast(data.error || "Pengiriman test email gagal", 'error');
+            } catch (err) { showToast("Gagal melakukan tes pengiriman email", 'error'); }
+        }
+
+        window.handleTestLdap = handleTestLdap;
+        window.handleTestEmail = handleTestEmail;
 
         async function handleSaveTelegramSettings(e) {
             e.preventDefault();
@@ -837,9 +882,9 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
                 if (data.settings) {
                     const s = data.settings;
                     sysSettings = s;
-                    document.getElementById('toggleMidtrans').value = s.enable_midtrans ? '1' : '0';
-                    document.getElementById('toggleWhatsApp').value = s.enable_whatsapp ? '1' : '0';
-                    document.getElementById('toggleSandboxSim').value = s.enable_sandbox_sim ? '1' : '0';
+                    if (document.getElementById('toggleMidtrans')) document.getElementById('toggleMidtrans').value = s.enable_midtrans ? '1' : '0';
+                    if (document.getElementById('toggleWhatsApp')) document.getElementById('toggleWhatsApp').value = s.enable_whatsapp ? '1' : '0';
+                    if (document.getElementById('toggleSandboxSim')) document.getElementById('toggleSandboxSim').value = s.enable_sandbox_sim ? '1' : '0';
                     
                     if (document.getElementById('cfgProPrice')) document.getElementById('cfgProPrice').value = s.pro_price || 49000;
                     if (document.getElementById('cfgProDiscountPercent')) document.getElementById('cfgProDiscountPercent').value = s.pro_discount_percent || 20;
@@ -862,6 +907,15 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
                     if (document.getElementById('cfgSmtpUsername')) document.getElementById('cfgSmtpUsername').value = s.smtp_username || '';
                     if (document.getElementById('cfgSmtpPassword')) document.getElementById('cfgSmtpPassword').value = s.smtp_password || '';
                     if (document.getElementById('cfgSmtpFromAddress')) document.getElementById('cfgSmtpFromAddress').value = s.smtp_from_address || 'no-reply@converter.bangden.my.id';
+
+                    if (document.getElementById('toggleLdap')) document.getElementById('toggleLdap').value = s.enable_ldap ? '1' : '0';
+                    if (document.getElementById('cfgLdapHost')) document.getElementById('cfgLdapHost').value = s.ldap_host || '';
+                    if (document.getElementById('cfgLdapPort')) document.getElementById('cfgLdapPort').value = s.ldap_port || 389;
+                    if (document.getElementById('cfgLdapBaseDn')) document.getElementById('cfgLdapBaseDn').value = s.ldap_base_dn || '';
+                    if (document.getElementById('cfgLdapBindDn')) document.getElementById('cfgLdapBindDn').value = s.ldap_bind_dn || '';
+                    if (document.getElementById('cfgLdapBindPass')) document.getElementById('cfgLdapBindPass').value = s.ldap_bind_password || '';
+                    if (document.getElementById('cfgLdapUserAttr')) document.getElementById('cfgLdapUserAttr').value = s.ldap_user_attribute || 'uid';
+                    if (document.getElementById('cfgLdapUseTls')) document.getElementById('cfgLdapUseTls').value = s.ldap_use_tls ? '1' : '0';
                 }
 
                 if (data.stats) {

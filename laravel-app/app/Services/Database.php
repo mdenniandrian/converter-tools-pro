@@ -137,7 +137,15 @@ class Database
             'telegram_bot_token' => getenv('TELEGRAM_BOT_TOKEN') ?: '',
             'telegram_chat_id' => getenv('TELEGRAM_CHAT_ID') ?: '',
             'enable_telegram_notif' => '1',
-            'enable_email_verification' => '0'
+            'enable_email_verification' => '0',
+            'enable_ldap' => '0',
+            'ldap_host' => getenv('LDAP_HOST') ?: '',
+            'ldap_port' => getenv('LDAP_PORT') ?: '389',
+            'ldap_base_dn' => getenv('LDAP_BASE_DN') ?: '',
+            'ldap_bind_dn' => getenv('LDAP_BIND_DN') ?: '',
+            'ldap_bind_password' => getenv('LDAP_BIND_PASSWORD') ?: '',
+            'ldap_user_attribute' => getenv('LDAP_USER_ATTRIBUTE') ?: 'uid',
+            'ldap_use_tls' => getenv('LDAP_USE_TLS') ?: '0'
         ];
 
         foreach ($defaults as $k => $v) {

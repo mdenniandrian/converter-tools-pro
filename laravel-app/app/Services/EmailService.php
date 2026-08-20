@@ -153,4 +153,35 @@ class EmailService
 
         return ['success' => false, 'error' => "SMTP Data delivery failed: {$dataRes}"];
     }
+
+    public static function sendTestEmail(string $targetEmail): array
+    {
+        $targetEmail = strtolower(trim($targetEmail));
+        if (!filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
+            return ['success' => false, 'error' => 'Alamat email penerima uji coba tidak valid.'];
+        }
+
+        $subject = "🧪 Test Connection Mailer - Convertify Pro";
+        $body = "
+        <div style=\"font-family: 'Segoe UI', Arial, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 2rem; border-radius: 12px; max-width: 600px; margin: 0 auto;\">
+            <div style=\"text-align: center; margin-bottom: 1.5rem;\">
+                <h1 style=\"color: #10b981; margin: 0; font-size: 1.8rem;\">🧪 Test SMTP Mailer OK</h1>
+                <p style=\"color: #94a3b8; font-size: 0.9rem; margin-top: 0.3rem;\">Convertify Pro SMTP Integration</p>
+            </div>
+            
+            <div style=\"background-color: #1e293b; padding: 1.5rem; border-radius: 10px; border: 1px solid #334155;\">
+                <p style=\"color: #cbd5e1; font-size: 0.95rem; line-height: 1.6;\">
+                    Selamat! Pengaturan SMTP Email Server Anda di <strong>Backoffice Convertify Pro</strong> sudah terkonfigurasi dengan benar dan siap digunakan untuk pengiriman OTP / Verifikasi Email.
+                </p>
+                <ul style=\"color: #94a3b8; font-size: 0.85rem; line-height: 1.8;\">
+                    <li>Target Email: <strong>{$targetEmail}</strong></li>
+                    <li>Waktu Pengujian: <strong>" . date('Y-m-d H:i:s T') . "</strong></li>
+                    <li>Status Transport: <strong>SMTP Socket Direct / Native Mail</strong></li>
+                </ul>
+            </div>
+        </div>
+        ";
+
+        return self::sendMail($targetEmail, $subject, $body);
+    }
 }

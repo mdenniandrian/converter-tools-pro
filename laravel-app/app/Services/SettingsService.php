@@ -58,6 +58,16 @@ class SettingsService
             'smtp_password' => $raw['smtp_password'] ?? (getenv('SMTP_PASSWORD') ?: ''),
             'smtp_from_address' => $raw['smtp_from_address'] ?? (getenv('SMTP_FROM_ADDRESS') ?: 'no-reply@converter.bangden.my.id'),
             'smtp_from_name' => $raw['smtp_from_name'] ?? (getenv('SMTP_FROM_NAME') ?: 'Convertify Pro'),
+
+            // LDAP Config
+            'enable_ldap' => ($raw['enable_ldap'] ?? '0') === '1',
+            'ldap_host' => $raw['ldap_host'] ?? (getenv('LDAP_HOST') ?: ''),
+            'ldap_port' => (int)($raw['ldap_port'] ?? (getenv('LDAP_PORT') ?: 389)),
+            'ldap_base_dn' => $raw['ldap_base_dn'] ?? (getenv('LDAP_BASE_DN') ?: ''),
+            'ldap_bind_dn' => $raw['ldap_bind_dn'] ?? (getenv('LDAP_BIND_DN') ?: ''),
+            'ldap_bind_password' => $raw['ldap_bind_password'] ?? (getenv('LDAP_BIND_PASSWORD') ?: ''),
+            'ldap_user_attribute' => $raw['ldap_user_attribute'] ?? (getenv('LDAP_USER_ATTRIBUTE') ?: 'uid'),
+            'ldap_use_tls' => ($raw['ldap_use_tls'] ?? '0') === '1',
         ];
     }
 
@@ -71,7 +81,9 @@ class SettingsService
             'midtrans_server_key', 'midtrans_client_key', 'midtrans_is_production',
             'wa_admin_number', 'telegram_bot_token', 'telegram_chat_id', 'enable_telegram_notif',
             'enable_email_verification', 'smtp_host', 'smtp_port', 'smtp_username', 'smtp_password',
-            'smtp_from_address', 'smtp_from_name'
+            'smtp_from_address', 'smtp_from_name',
+            'enable_ldap', 'ldap_host', 'ldap_port', 'ldap_base_dn', 'ldap_bind_dn', 'ldap_bind_password',
+            'ldap_user_attribute', 'ldap_use_tls'
         ];
 
         foreach ($allowedKeys as $key) {

@@ -542,7 +542,10 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
             const title = document.getElementById('authModalTitle');
             if (title) title.textContent = (authMode === 'register') ? 'Register Account' : 'Login Account';
             const btn = document.getElementById('authSubmitBtn');
-            if (btn) btn.textContent = (authMode === 'register') ? 'Create Account' : 'Login';
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = (authMode === 'register') ? 'Create Account' : 'Login';
+            }
 
             const tabLogin = document.getElementById('authTabLogin');
             const tabRegister = document.getElementById('authTabRegister');
@@ -587,12 +590,40 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
 
         async function handleAuthSubmit(e) {
             e.preventDefault();
+            const emailVal = (document.getElementById('authEmail').value || '').trim();
+            const passVal = (document.getElementById('authPassword').value || '').trim();
+            const nameVal = (document.getElementById('authName') ? document.getElementById('authName').value : '').trim();
+
+            if (authMode === 'register' && !nameVal) {
+                showToast("Mohon masukkan nama lengkap Anda.", 'info');
+                if (document.getElementById('authName')) document.getElementById('authName').focus();
+                return;
+            }
+
+            if (!emailVal) {
+                showToast("Mohon masukkan alamat email Anda.", 'info');
+                document.getElementById('authEmail').focus();
+                return;
+            }
+
+            if (!passVal || passVal.length < 6) {
+                showToast("Password minimal 6 karakter.", 'info');
+                document.getElementById('authPassword').focus();
+                return;
+            }
+
             const endpoint = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
-            const emailVal = document.getElementById('authEmail').value;
+            const btn = document.getElementById('authSubmitBtn');
+            const origText = btn ? btn.textContent : 'Submit';
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Memproses...';
+            }
+
             const body = {
-                name: document.getElementById('authName').value,
+                name: nameVal,
                 email: emailVal,
-                password: document.getElementById('authPassword').value
+                password: passVal
             };
 
             try {
@@ -602,17 +633,28 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
                     body: JSON.stringify(body)
                 });
                 const data = await res.json();
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = origText;
+                }
+
                 if (data.requires_verification) {
                     currentVerifyEmail = data.email || emailVal;
                     closeModal('authModal');
                     openOtpModal(currentVerifyEmail, data.message || data.error);
                 } else if (data.success) {
                     showToast(data.message || "Authentication successful! Welcome.", 'success');
-                    setTimeout(() => location.reload(), 1000);
+                    setTimeout(() => location.reload(), 800);
                 } else {
                     showToast(data.error || "Authentication failed", 'error');
                 }
-            } catch (err) { showToast("Error connecting to server", 'error'); }
+            } catch (err) {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = origText;
+                }
+                showToast("Error connecting to server", 'error');
+            }
         }
 
         function openOtpModal(email, msg) {

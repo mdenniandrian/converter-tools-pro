@@ -12,7 +12,7 @@
                 <button type="button" id="authTabRegister" class="sub-menu-pill" style="flex: 1; text-align: center; border: none;" onclick="openAuthModal('register')">Register Account</button>
             </div>
 
-            <form onsubmit="handleAuthSubmit(event)">
+            <form onsubmit="handleAuthSubmit(event)" novalidate>
                 <div id="registerNameGroup" style="display: none;">
                     <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Full Name</label>
                     <input type="text" id="authName" class="select-input" placeholder="e.g. John Doe">

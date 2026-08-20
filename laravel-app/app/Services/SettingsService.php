@@ -51,7 +51,7 @@ class SettingsService
             'enable_telegram_notif' => ($raw['enable_telegram_notif'] ?? '1') === '1',
 
             // SMTP & Email Verification Config
-            'enable_email_verification' => ($raw['enable_email_verification'] ?? '1') === '1',
+            'enable_email_verification' => ($raw['enable_email_verification'] ?? '0') === '1',
             'smtp_host' => $raw['smtp_host'] ?? (getenv('SMTP_HOST') ?: ''),
             'smtp_port' => (int)($raw['smtp_port'] ?? (getenv('SMTP_PORT') ?: 587)),
             'smtp_username' => $raw['smtp_username'] ?? (getenv('SMTP_USERNAME') ?: ''),

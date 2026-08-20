@@ -136,7 +136,8 @@ class Database
             'wa_admin_number' => getenv('WA_ADMIN_NUMBER') ?: '6282113237920',
             'telegram_bot_token' => getenv('TELEGRAM_BOT_TOKEN') ?: '',
             'telegram_chat_id' => getenv('TELEGRAM_CHAT_ID') ?: '',
-            'enable_telegram_notif' => '1'
+            'enable_telegram_notif' => '1',
+            'enable_email_verification' => '0'
         ];
 
         foreach ($defaults as $k => $v) {

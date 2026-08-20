@@ -100,5 +100,33 @@
         </div>
     </div>
 
+    <!-- MODAL 6: GUEST INSTAGRAM FOLLOW PROMPT -->
+    <div class="modal-overlay" id="guestIgModal" style="display: none;" onclick="if(event.target===this)closeModal('guestIgModal')">
+        <div class="modal-card" style="text-align: center; max-width: 440px;">
+            <div style="width: 70px; height: 70px; margin: 0 auto 1rem auto; border-radius: 20px; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; box-shadow: 0 10px 25px rgba(220, 39, 67, 0.4);">
+                📸
+            </div>
+            
+            <h3 style="font-size: 1.35rem; font-weight: 800; color: #fff; margin-bottom: 0.4rem;">Follow Instagram Kami!</h3>
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.4rem; line-height: 1.5;">
+                Halo Kak! 👋 Untuk menggunakan semua fitur konverter gratis Convertify Pro, yuk bantu <strong style="color: #f472b6;">Follow Instagram @mdenniandrian_</strong> terlebih dahulu.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                <a href="https://instagram.com/mdenniandrian_" target="_blank" class="action-btn" style="display: block; text-decoration: none; text-align: center; background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); font-size: 0.95rem; font-weight: 700; padding: 0.85rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(220, 39, 67, 0.35);" onclick="handleIgFollowClick()">
+                    📸 Follow Instagram @mdenniandrian_
+                </a>
+
+                <button type="button" class="action-btn" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: #06b6d4; font-size: 0.88rem;" onclick="closeModal('guestIgModal'); openAuthModal('login');">
+                    🔑 Sudah Punya Akun? Login / Register
+                </button>
+
+                <button type="button" class="back-btn" onclick="closeModal('guestIgModal')" style="font-size: 0.82rem; color: var(--text-muted);">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- GLOBAL TOAST NOTIFICATION CONTAINER -->
     <div id="toastContainer" style="position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; max-width: 400px; pointer-events: none;"></div>

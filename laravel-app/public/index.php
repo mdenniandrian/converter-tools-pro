@@ -457,7 +457,32 @@ if ($uri === '/api/payment/simulate' && $_SERVER['REQUEST_METHOD'] === 'POST') A
             document.getElementById('toolsGrid').style.display = 'grid';
         }
 
+        let pendingToolKey = null;
+
         function selectTool(toolKey) {
+            if (!authUser) {
+                pendingToolKey = toolKey;
+                const m = document.getElementById('guestIgModal');
+                if (m) m.style.display = 'flex';
+                return;
+            }
+
+            proceedSelectTool(toolKey);
+        }
+
+        window.selectTool = selectTool;
+
+        function handleIgFollowClick() {
+            closeModal('guestIgModal');
+            showToast("✨ Terima kasih telah follow @mdenniandrian_! Fitur siap digunakan.", 'success');
+            if (pendingToolKey) {
+                proceedSelectTool(pendingToolKey);
+            }
+        }
+
+        window.handleIgFollowClick = handleIgFollowClick;
+
+        function proceedSelectTool(toolKey) {
             const userPlan = (authUser && authUser.plan) ? authUser.plan.toLowerCase() : 'free';
 
             if (toolKey === 'imgconvert' && !['pro', 'enterprise'].includes(userPlan)) {
